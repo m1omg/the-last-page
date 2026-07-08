@@ -1,5 +1,7 @@
 # The Last Page
 
+**▶ Play it now: https://m1omg.github.io/the-last-page/** (no install needed)
+
 A small, complete emotional JRPG for the browser, in the spirit of RPG Maker
 dream games — an original story about a shared sketchbook, a spreading ink
 stain, and an unfinished ending.
