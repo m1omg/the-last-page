@@ -1,0 +1,241 @@
+{
+  "style": "Children's storybook illustration, hand-drawn with colored pencils and wax crayons on soft cream paper with visible paper grain. Cute, gentle, slightly wobbly linework like a talented child's sketchbook drawing. Soft pastel palette: cream #FFF6E3, blush pink #F4B8C1, butter yellow #F7DC8E, sky blue #A8D8EA, mint green #BEE5B0, lavender #C9B8E8, with warm brown pencil outlines. Cozy, wistful, dreamlike storybook mood. Absolutely no text, no letters, no numbers, no words, no watermark, no signature, no border, no frame.",
+  "topdown": "Straight top-down overhead view like a classic 16-bit JRPG / RPG Maker map: the camera looks straight down at the ground with a slight three-quarter tilt so tall objects show a hint of their front face. The ground fills the ENTIRE frame edge to edge - no sky, no horizon line, no vanishing-point perspective, no characters, no people, no creatures. It must read as a game map you could walk around in.",
+  "chroma": "The single subject is perfectly centered on a completely flat, uniform, PURE BRIGHT GREEN background (#00FF00) that fills every pixel behind and around it. No ground, no floor, no shadow cast on the background, no vignette, no gradient - only flat solid green everywhere except the subject itself.",
+  "images": [
+    {
+      "key": "cg_title",
+      "size": "1536x1024",
+      "use": "style",
+      "prompt": "Title screen artwork. Scene: a child's wooden desk at night lit by a small warm desk lamp. In the center lies a big open sketchbook. Standing ON the open page, tiny, is a hand-drawn girl with a red hair-ribbon and a satchel, viewed from behind, looking up. From the far page a beautiful but ominous swirl of black ink rises into the air like a slow storm, with tiny torn paper pieces floating in it. Wax crayons and a pencil are scattered beside the sketchbook. Moonlight from a window mixes with the lamp glow. Wistful, magical, slightly melancholy. Leave the upper third of the image relatively calm and uncluttered so a game logo can be placed there later. No text anywhere."
+    },
+    {
+      "key": "bg_real_bedroom",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "A child's small bedroom at night, drawn in MUTED, desaturated, gray-blue tones (this is the sad real world - keep colors dim and washed out, like a memory). Layout, described on a 12 wide by 9 tall grid where (1,1) is top-left: a bed with rumpled pale blanket occupies the LEFT EDGE middle rows (columns 1-3, rows 4-6). A wooden desk with a closed sketchbook and a dead lamp sits against the TOP wall (columns 8-10, row 1-2). A window with closed curtains and thin moonlight is on the TOP wall (columns 5-6, row 1). A round rug lies in the room center (columns 5-8, rows 4-6). A bookshelf stands against the RIGHT wall (column 12, rows 3-5). The door is a gap in the BOTTOM wall (columns 6-7, row 9). Wooden floorboards everywhere else, a few crumpled paper balls near the desk. Everything gloomy, quiet, abandoned-feeling."
+    },
+    {
+      "key": "bg_real_hall",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "A small apartment hallway and living room at night, drawn in MUTED, desaturated gray-blue tones (sad real world, dim washed-out colors). Layout on a 12 wide by 9 tall grid, (1,1) top-left: the child's bedroom door is a gap in the TOP wall (columns 2-3, row 1). A hallway runs from it down and to the right. A small kitchen corner with counter and cold kettle occupies the RIGHT side (columns 10-12, rows 2-4). A sofa with a folded blanket and a low table with untouched tea sits center-left (columns 3-6, rows 5-6). Framed pictures hang on walls but their contents are faded to gray blurs. The front door of the apartment is a gap in the BOTTOM wall (columns 6-7, row 9) with a doormat and a pair of small shoes beside it. Wooden floor, one sad droopy potted plant in the corner."
+    },
+    {
+      "key": "bg_real_street",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "A quiet small-town street at pale dawn, drawn in MUTED desaturated tones but with the first hint of warm morning gold creeping in from the top. Layout on a 12 wide by 9 tall grid, (1,1) top-left: a sidewalk runs along the BOTTOM edge (rows 8-9) in front of a row of small shopfronts with drawn shutters (row 9 is building fronts). An empty asphalt road crosses the middle horizontally (rows 5-7). A zebra crosswalk with white stripes crosses the road vertically at center (columns 6-7, rows 5-7). On the far side, another sidewalk (row 4) leads to a low hedge and, at the TOP edge, the entrance courtyard of a small hospital building with a glass door glowing warm (columns 5-8, rows 1-2). A bus stop with a small bench stands at (columns 2-3, row 8). A single traffic light stands beside the crosswalk at (column 8, row 7). The street is completely empty, no cars, no people. Quiet, held-breath feeling."
+    },
+    {
+      "key": "bg_hospital_room",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "A small hospital room in early morning, drawn with gentle, slowly warming colors - soft gold sunlight spilling in (hope returning, less muted than a night scene but still tender and quiet). Layout on a 12 wide by 9 tall grid, (1,1) top-left: a hospital bed with a sleeping child tucked under a pale blue blanket sits against the TOP wall, centered (columns 5-8, rows 1-3) - only show the small sleeping figure from above, peaceful, like they are dreaming. A heart monitor stands left of the bed (column 4, row 2). A visitor chair sits beside the bed on the right (column 9, row 3). A window on the TOP-RIGHT wall pours warm morning light across the floor (columns 10-11, row 1). A small table with a vase of fresh flowers and folded paper cranes at (columns 2-3, rows 2-3). The door is a gap in the BOTTOM wall (columns 6-7, row 9). Clean pale floor with the long golden light stripe across it."
+    },
+    {
+      "key": "bg_blank_page",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "The Blank Page - a dreamlike hub world that is literally a vast empty sheet of cream sketchbook paper seen from above, with faint pencil margin lines and a soft paper grain. It feels endless, calm and slightly lonely. In the exact center is a tiny cozy island of belongings: a round fuzzy rug, a lit candle-lamp with a warm glow circle, and a fat striped cushion (columns 5-8, rows 4-6 on a 12 by 9 grid). Around the center, four doors stand alone on the paper, drawn in crayon as if a child drew doorframes straight onto the page: a GREEN door with grass scribbles at the LEFT edge (column 1, rows 4-5), a BLUE folded-paper door at the TOP edge (columns 6-7, row 1), a YELLOW door with a little button drawn on it at the RIGHT edge (column 12, rows 4-5), and at the BOTTOM edge a dark smudged half-erased door surrounded by gray ink stains bleeding into the paper (columns 6-7, row 9). A few loose crayons lie scattered on the paper. Vast negative space is intentional - most of the image is soft empty paper."
+    },
+    {
+      "key": "bg_meadow_1",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "Crayon Meadow - a joyful meadow drawn entirely in bold happy wax crayon strokes, top-down RPG map. Grass is scribbled bright green with visible crayon texture. Layout on a 12 by 9 grid, (1,1) top-left: a winding dirt path drawn in brown crayon enters at the BOTTOM edge center (columns 6-7, row 9) and winds up to a gate of two candy-striped poles at the TOP edge center (columns 6-7, row 1). LEFT of the path: a pond drawn as a blue crayon spiral (columns 2-4, rows 5-7) with a smiling drawn duck on it. RIGHT of the path: three giant flowers with simple smiley faces (columns 9-11, rows 3-6). A big friendly sun with rays is drawn in the TOP-LEFT corner of the ground itself, as if a child drew it on the grass (columns 1-3, rows 1-2). A wooden signpost with a blank sign stands beside the path (column 8, row 7). A few white daisy scribbles scattered everywhere. Cheerful, warm, innocent."
+    },
+    {
+      "key": "bg_meadow_2",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "Crayon Meadow clearing - a top-down RPG map of a cozy picnic clearing drawn in wax crayon. Layout on a 12 by 9 grid, (1,1) top-left: the dirt path enters at the BOTTOM edge center (columns 6-7, row 9). In the LEFT-CENTER area a red-and-white checkered picnic blanket is spread out (columns 3-5, rows 4-6) with drawn teacups and a plate of cookies on it. On the RIGHT side stands an adorable little cottage built of gingerbread cookies with icing trim and a candy door (columns 9-11, rows 2-4), with a tiny path connecting it to the main path. The TOP-CENTER area (columns 5-8, rows 1-3) is an open circle of trampled grass - a clearing that feels like an arena - and at its center the grass is stained by a spreading blotch of dark gray ink, wrong and out of place against the cheerful crayon world, with thin ink tendrils creeping outward. A few crayon butterflies here and there. Mood: cheerfulness with one wrong note."
+    },
+    {
+      "key": "bg_woods_1",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "Origami Woods - a top-down RPG map of a quiet magical forest where every tree is folded from paper. Trees are geometric origami pines and broadleaf trees in folded shades of teal, dusk blue and lavender paper, casting soft shadows, seen from above so their folded tops show. Layout on a 12 by 9 grid, (1,1) top-left: dense origami trees fill the LEFT third (columns 1-3) and the RIGHT third (columns 10-12), leaving a walkable forest floor of soft violet paper in the middle. The path enters at the BOTTOM edge center (columns 6-7, row 9). A creek of glossy folded blue paper zigzags horizontally across the middle (rows 5-6, all columns), crossable only by three flat white stepping stones at columns 4, 6 and 9. Tiny yellow paper fireflies glow between the trees. The path continues to the TOP edge center exit (columns 6-7, row 1). Halfway, a small wooden lantern post glows warmly beside the path (column 8, row 3). Mysterious, hushed, gentle."
+    },
+    {
+      "key": "bg_woods_2",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "Origami Woods shrine clearing - a top-down RPG map, deep in a paper forest. Layout on a 12 by 9 grid, (1,1) top-left: origami trees in dusk blue and violet paper crowd all edges of the map, opening into a round central clearing of pale lavender paper floor (columns 4-9, rows 3-7). The path enters at the BOTTOM edge center (columns 6-7, row 9). At the TOP of the clearing stands a small candle shrine: a stone-like folded paper alcove holding one large unlit white candle, surrounded by seven tiny lit tea-light candles arranged in a half circle (columns 5-8, rows 2-3). LEFT in the clearing, a fallen giant origami crane lies on its side, creased and crumpled, big as a boat (columns 2-4, rows 4-6). Strings of tiny paper lanterns hang between trees at the clearing edge. Wax drips and faint scorch marks on the paper floor near the shrine. Mood: sacred, sad, warm candlelight against blue dusk."
+    },
+    {
+      "key": "bg_bay_1",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "Button Bay boardwalk - a top-down RPG map of a cheerful seaside boardwalk in a craft-supplies world. Layout on a 12 by 9 grid, (1,1) top-left: the TOP half (rows 1-4) is the sea, made of rippling blue felt fabric with waves of stitched white thread, and dozens of colorful buttons of all sizes floating like buoys and lily pads. The BOTTOM half (rows 5-9) is a boardwalk of warm wooden popsicle-stick planks. The path enters at the BOTTOM edge center (columns 6-7, row 9). On the boardwalk: a little market stall with a striped awning selling seashells and spools of thread (columns 2-4, rows 6-7), a wooden bench (column 9, row 7), and a barrel of knitting needles (column 11, row 6). Strings of tiny fairy lights on poles run along the boardwalk edge (row 5). A small wooden pier extends from the boardwalk up into the felt sea (columns 6-7, rows 3-4), ending at a tied-up little paper boat. At the RIGHT edge, the boardwalk continues off-screen (column 12, rows 6-7). Breezy, playful, saltwater-cozy."
+    },
+    {
+      "key": "bg_bay_2",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "Button Bay lighthouse cliff - a top-down RPG map. Layout on a 12 by 9 grid, (1,1) top-left: the LEFT third (columns 1-4) is felt-fabric sea with button buoys and stitched thread waves. The rest is a grassy felt cliff top. A path of flat button stepping-stones enters at the BOTTOM edge center (columns 6-7, row 9) and curls up and left to the lighthouse. The lighthouse stands TOP-CENTER (columns 6-8, rows 1-3): it is a giant wooden sewing thread spool standing on end, wrapped in red and white striped thread, with a glass lantern room on top holding a big unlit light bulb. A small door at its base faces down. RIGHT side: a tiny keeper's cottage with a round felt roof (columns 10-11, rows 4-5) and a clothesline with tiny socks. Near the cliff edge a brass telescope on a tripod points out to sea (column 3, row 6). Scattered seashells and one red crab-sized button. Windy, bright, a touch lonely."
+    },
+    {
+      "key": "bg_depths_1",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "The Smudge Depths - a top-down RPG map of a drowned, unfinished part of the sketchbook world. Almost MONOCHROME: wet black ink, gray washes and bare cream paper only, with the very faintest ghost of blue. Layout on a 12 by 9 grid, (1,1) top-left: a flood of glossy black ink covers most of the map like a dark lake, its surface faintly swirling. Floating on the ink is a walkable trail of torn paper scraps and half-finished pencil sketches of ground, forming a broken path: it starts at the BOTTOM edge center (columns 6-7, row 9), steps across separated paper islands at (columns 5-6, rows 7-8), (columns 7-8, rows 5-6), (columns 4-5, rows 4-5), and reaches a larger island of scribbled gray ground at the TOP edge center (columns 5-8, rows 1-2). Around the islands, small unfinished pencil doodles of flowers and houses sink half-submerged into the ink, only their outlines visible. Long thin ink tendrils reach across the surface. Mood: quiet dread, sorrow, beauty in ruin - but still hand-drawn and soft, not horror."
+    },
+    {
+      "key": "bg_depths_2",
+      "size": "1536x1024",
+      "use": "style+topdown",
+      "prompt": "The heart of the Smudge - a top-down RPG map, almost monochrome (black ink, gray wash, cream paper). Layout on a 12 by 9 grid, (1,1) top-left: an enormous still pool of pitch-black ink fills the whole map. One single round island of clean, untouched cream paper floats in the center (columns 5-8, rows 4-6), lit as if by a soft spotlight from above. A narrow bridge of overlapping torn paper strips connects the island to the BOTTOM edge center (columns 6-7, rows 7-9). On the ink surface all around, giant faint pencil sketch lines are visible beneath the surface, as if an enormous unfinished drawing sank here: a huge half-drawn childlike outline of a smiling face, only partly complete, spans the TOP area under the ink (columns 3-10, rows 1-3), heartbreakingly unfinished. A few paper boats lie capsized in the ink. The center island is completely empty and clean. Mood: the quiet center of grief, solemn, strangely peaceful."
+    },
+    {
+      "key": "pt_mira_neutral",
+      "size": "1024x1024",
+      "use": "style",
+      "prompt": "Character portrait, head and shoulders, facing slightly left, centered on a plain warm cream paper background with a hand-drawn rough circle behind the head. Subject: Mira, a small 11-year-old girl drawn in soft pencil and crayon: short messy dark-brown hair with a slightly crooked red ribbon tied on the left side, big round dark eyes with a thoughtful, guarded expression (not smiling, not sad - carefully neutral), pale rosy cheeks, a mustard-yellow scarf and a dusty blue coat. She looks like a child who is being brave on purpose. Simple, clean, expressive - suitable as a dialogue box portrait."
+    },
+    {
+      "key": "pt_mira_giggly",
+      "size": "1024x1024",
+      "use": "style",
+      "prompt": "Character portrait, head and shoulders, facing slightly left, centered on a plain warm cream paper background with a hand-drawn rough circle behind the head. Subject: Mira, a small 11-year-old girl drawn in soft pencil and crayon: short messy dark-brown hair with a red ribbon on the left side, mustard-yellow scarf, dusty blue coat. Expression: eyes squeezed shut with laughter, huge open genuine grin, cheeks pink, tiny sparkle doodles and one little star drawn around her head. Pure childish joy. Same character design as a neutral version, only the expression changes. Suitable as a dialogue box portrait."
+    },
+    {
+      "key": "pt_mira_gloomy",
+      "size": "1024x1024",
+      "use": "style",
+      "prompt": "Character portrait, head and shoulders, facing slightly left, centered on a plain warm cream paper background with a hand-drawn rough circle behind the head. Subject: Mira, a small 11-year-old girl drawn in soft pencil and crayon: short messy dark-brown hair with a red ribbon on the left side, mustard-yellow scarf, dusty blue coat. Expression: eyes downcast and glistening, brows tilted up, mouth pressed into a tiny wobbly line, one big tear at the corner of one eye, a small rain-cloud doodle drawn above her head. Quiet heartbreak, trying not to cry. Same character design as the neutral version, only the expression changes. Suitable as a dialogue box portrait."
+    },
+    {
+      "key": "pt_mira_grumpy",
+      "size": "1024x1024",
+      "use": "style",
+      "prompt": "Character portrait, head and shoulders, facing slightly left, centered on a plain warm cream paper background with a hand-drawn rough circle behind the head. Subject: Mira, a small 11-year-old girl drawn in soft pencil and crayon: short messy dark-brown hair with a red ribbon on the left side, mustard-yellow scarf, dusty blue coat. Expression: puffed-out cheeks, furious pout, brows scrunched down hard, eyes narrowed, a little scribbled anger-mark doodle beside her head, steam wisps drawn from her ears in crayon. Childish stubborn fury, more cute than scary. Same character design as the neutral version, only the expression changes. Suitable as a dialogue box portrait."
+    },
+    {
+      "key": "pt_biscuit",
+      "size": "1024x1024",
+      "use": "style",
+      "prompt": "Character portrait, head and shoulders, facing slightly right, centered on a plain warm cream paper background with a hand-drawn rough circle behind the head. Subject: Sir Biscuit, a valiant gingerbread-cookie knight drawn in crayon: round golden-brown cookie head with white icing outlining his face like a helmet's edge, candy-button eyes, a proud little icing mustache, a bottle-cap helmet worn slightly askew, and a red checkered napkin tied as a cape at his neck. Expression: chest puffed, chin up, one eyebrow cocked - heroic and a little bit silly, utterly earnest. Suitable as a dialogue box portrait."
+    },
+    {
+      "key": "pt_wisp",
+      "size": "1024x1024",
+      "use": "style",
+      "prompt": "Character portrait, head and shoulders, facing slightly right, centered on a plain warm cream paper background with a hand-drawn rough circle behind the head. Subject: Wisp, a shy little living candle-flame spirit drawn in soft crayon: a teardrop-shaped body of warm golden-orange flame with a soft white core, two big worried dark eyes set wide apart, tiny stubby arms hugging itself, sitting atop a small melted white candle stub with one drip of wax like a tear. A gentle glow halo around it. Expression: bashful, peeking upward, hopeful but timid. Suitable as a dialogue box portrait."
+    },
+    {
+      "key": "pt_ren",
+      "size": "1024x1024",
+      "use": "style",
+      "prompt": "Character portrait, head and shoulders, facing slightly right, centered on a plain warm cream paper background with a hand-drawn rough circle behind the head. Subject: Ren, an 11-year-old kid drawn ONLY in plain gray pencil - no color at all on the character (though the paper background stays warm cream) - and slightly unfinished: the right side of their hair and shoulder fade into loose sketchy construction lines, as if the artist never finished the drawing. Ren has fluffy short hair, round glasses with one cracked lens drawn kindly not scarily, a huge warm open smile and crinkled happy eyes, a hoodie with drawstrings. The most joyful expression in the world, drawn in the saddest medium. Suitable as a dialogue box portrait."
+    },
+    {
+      "key": "en_sniffle",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A cute sad monster for a JRPG battle, drawn in crayon and pencil: SNIFFLE, a crumpled-tissue ghost - a soft wrinkled white tissue draped like a tiny ghost, with two huge watery eyes, a dripping button nose, and stubby nubs for arms. It hovers slightly, drooping. A few tiny blue teardrop doodles float around it. Sad but adorable, the kind of monster you want to hug."
+    },
+    {
+      "key": "en_scribble",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A cute agitated monster for a JRPG battle, drawn in crayon: SCRIBBLES, a cat made entirely of one continuous tangled black-and-purple crayon scribble, with two round white eyes with tiny pupils peeking out of the tangle, two pointy scribble ears, and a frazzled zigzag tail. It bristles like static. Frantic and jittery but fundamentally adorable."
+    },
+    {
+      "key": "en_thornbud",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A cute grumpy monster for a JRPG battle, drawn in crayon: THORNBUD, a rose bud that refuses to bloom - a tightly closed dark-pink rosebud head with an angry scrunched face (furrowed drawn-on brows, pouting mouth), sitting on a green stem with two leaf-arms crossed like a sulking child, and a skirt of small thorns. A tiny scribbled storm cloud hovers over it. Grumpy, defensive, secretly fragile."
+    },
+    {
+      "key": "en_buttoncrab",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A cute anxious monster for a JRPG battle, drawn in crayon: CLASP, a little crab whose shell is a giant four-hole button in faded red, with pipe-cleaner legs, two safety-pin pincers held up defensively, and worried eyes on stalks. Loose threads trail from its button shell as if it is coming unsewn. Skittish, clingy, endearing."
+    },
+    {
+      "key": "en_inklet",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A cute melancholy monster for a JRPG battle: INKLET, a small blob of glossy black ink shaped like a fat teardrop, with two enormous round white eyes (no pupils) and no mouth, tiny stubby arms reaching up as if asking to be picked up. Its surface has soft wet highlights; one thin drip runs down its side. Around it float two or three tiny torn paper scraps. Heartbreaking and adorable, not scary at all."
+    },
+    {
+      "key": "boss_tangle",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A boss monster for a JRPG battle, drawn in furious crayon: TANGLE, a huge hovering ball of violently tangled scribbles in black, deep red and purple crayon, the strokes so dense and angry they tear the air, with dozens of snapped pencil stubs and broken crayon pieces sticking out of it like spines. Deep in the tangle glare two narrow white eyes. A few scribbled lightning marks around it. It looks like an argument given a body - furious, wounded, magnificent - yet still hand-drawn and childlike, not realistic horror."
+    },
+    {
+      "key": "boss_swan",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A boss monster for a JRPG battle: THE PAPER SWAN, a giant elegant origami swan folded from once-white paper now gray at the creases, floating with regal sorrow. One wing is perfectly folded and raised; the other wing is crumpled, half-unfolded and dragging. Its long folded neck bows slightly. Faint watermark stains like dried tears run down its breast, and a thin paper crown sits on its head. Around it drift a few loose torn paper feathers. Majestic, mournful, beautiful - drawn in soft pencil and crayon, gentle not scary."
+    },
+    {
+      "key": "boss_keeper",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A boss monster for a JRPG battle: THE BELL KEEPER, a life-size antique porcelain doll dressed as a lighthouse keeper - navy pea coat with big buttons, a small captain's cap - with a hairline crack running down one side of its gentle painted face. It stands stiffly, holding up a small shiny silver bicycle bell in both white-gloved hands like a sacred offering. Its painted eyes look down at the bell. One tear-line of dark stain runs from one eye. Behind its shoulders, a faint warm lamp-glow halo. Solemn, uncanny but sympathetic, drawn in soft crayon and pencil - melancholy, not creepy horror."
+    },
+    {
+      "key": "boss_smudge",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A final boss for an emotional JRPG, drawn in ink and pencil: THE SMUDGE, a towering slow wave of wet black ink rising like a standing wave, its edges bleeding into thin tendrils and drips. Deep inside the translucent ink, faintly visible, floats the unfinished gray-pencil outline of a child - just a gentle half-drawn silhouette with fluffy hair and round glasses, one hand reaching outward toward the viewer, almost touching the ink's surface from within. The ink has no face and no eyes. Vast, quiet, sorrowful - like grief itself, beautiful and soft, absolutely not gory or horror-styled."
+    },
+    {
+      "key": "sp_mira_sheet",
+      "size": "1024x1024",
+      "use": "style+chroma-sheet",
+      "prompt": "A video game character walking sprite sheet, arranged as a STRICT 2 columns by 4 rows grid of the SAME character, all cells equal size, generous green space between cells, every cell on flat pure green #00FF00. The character: Mira, a tiny cute chibi 11-year-old girl drawn in crayon - short messy dark-brown hair with a red ribbon on the left, mustard-yellow scarf, dusty blue coat, little brown boots; big head, small body, full figure visible head to feet in every cell. ROW 1: seen from the FRONT (facing the viewer), left cell mid-step with left foot forward, right cell mid-step with right foot forward. ROW 2: seen from her LEFT SIDE walking left, two alternating step poses. ROW 3: seen from her RIGHT SIDE walking right, two alternating step poses. ROW 4: seen from BEHIND (back of her head, ribbon visible), two alternating step poses. Identical character design, scale and proportions in all 8 cells. No text, no labels, no grid lines."
+    },
+    {
+      "key": "sp_biscuit",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A video game overworld sprite: Sir Biscuit, a tiny cute chibi gingerbread-cookie knight standing facing the viewer, full figure head to feet - round golden-brown cookie body with white icing trim, candy-button eyes, icing mustache, a bottle-cap helmet slightly askew, a red checkered napkin cape, holding a wooden skewer like a proud little sword point-down. Big head, small body, sturdy stance. Drawn in crayon, adorable and earnest."
+    },
+    {
+      "key": "sp_wisp",
+      "size": "1024x1024",
+      "use": "style+chroma",
+      "prompt": "A video game overworld sprite: Wisp, a tiny cute candle-flame spirit facing the viewer, full figure - a small melted white candle stub with two stubby feet, topped by a teardrop-shaped warm golden flame body with two big shy dark eyes and tiny arms, one wax drip like a tear on the candle. A soft glow halo. Drawn in soft crayon, bashful and sweet."
+    },
+    {
+      "key": "cg_memory_1",
+      "size": "1536x1024",
+      "use": "style",
+      "prompt": "A treasured memory illustration, like a page torn from a sketchbook (slightly torn left edge drawn into the image): inside a cozy blanket fort lit by a string of fairy lights and a flashlight, two 11-year-old kids lie on their bellies side by side drawing in one shared big sketchbook - Mira, a girl with short dark hair and a red ribbon and yellow scarf, and Ren, a kid with fluffy hair and round glasses and a hoodie, both grinning, crayons everywhere, socks half off. On the sketchbook page between them, tiny doodles of a gingerbread knight and a candle spirit are visible. Warm golden light, pure childhood happiness."
+    },
+    {
+      "key": "cg_memory_2",
+      "size": "1536x1024",
+      "use": "style",
+      "prompt": "A treasured memory illustration, like a page torn from a sketchbook (slightly torn top edge drawn into the image): two 11-year-old kids on playground swings at golden hour, swinging toward a huge peach-and-lavender sky - Mira, a girl with short dark hair, red ribbon and yellow scarf, laughing with her head thrown back, and Ren, a kid with fluffy hair, round glasses and a hoodie, standing on their swing seat pointing at the sky where the clouds happen to form the shape of a big friendly swan. Their shadows stretch long on the woodchips below. Wind, warmth, invincible-feeling childhood."
+    },
+    {
+      "key": "cg_memory_3",
+      "size": "1536x1024",
+      "use": "style",
+      "prompt": "A painful memory illustration, like a page torn from a sketchbook (torn corner drawn into the image): a child's bedroom in cold afternoon light. Two 11-year-old kids stand back to back in the middle of the room, arms crossed, faces turned away from each other - Mira, a girl with short dark hair, red ribbon and yellow scarf, scowling with wet furious eyes; Ren, a kid with fluffy hair and round glasses, hurt and clenched. On the floor between their feet lies their shared sketchbook, fallen open, with one page RIPPED down the middle, the two halves separated. Scattered crayons. The room's colors are drained and grayish except the kids and the torn page. The exact moment a friendship cracks."
+    },
+    {
+      "key": "cg_memory_4",
+      "size": "1536x1024",
+      "use": "style",
+      "prompt": "A quiet devastating memory illustration, like a page torn from a sketchbook (heavily torn, creased edges drawn into the image): a rainy street crosswalk seen from a low angle, all in washed gray-blue watercolor pencil. In the middle of the zebra crossing lies a child's sketchbook, fallen open, pages soaking in the rain, colors of its drawings bleeding and running like ink tears across the wet asphalt. Scattered crayons roll in the gutter. A single small sneaker lies on its side near the curb. No people anywhere. In the top corner, the blurred warm glow of a traffic light reflects red in the puddles. Restrained, symbolic, absolutely no depicted injury or violence - only the aftermath objects and the rain."
+    },
+    {
+      "key": "cg_ending_true",
+      "size": "1536x1024",
+      "use": "style",
+      "prompt": "An emotional ending illustration: a small hospital room flooded with warm golden morning light. Mira, an 11-year-old girl with short dark hair, red ribbon and yellow scarf, sits on a chair pulled close beside the hospital bed, holding open a big sketchbook, mid-word, reading aloud with tears and a smile. In the bed, tucked under a pale blue blanket, sleeps Ren, a kid with fluffy hair (glasses folded on the bedside table), and their hand, resting outside the blanket, has curled ever so slightly toward Mira's. Paper cranes and flowers on the side table. Above the sketchbook, faint translucent crayon doodles rise in the sunbeam like dust motes: a tiny gingerbread knight and a little candle flame, waving. Hope, love, morning."
+    },
+    {
+      "key": "cg_ending_page",
+      "size": "1536x1024",
+      "use": "style",
+      "prompt": "A bittersweet dreamlike ending illustration: on a vast empty cream sketchbook page, a small picnic blanket with three figures having tea under a crayon-drawn sun - Mira, an 11-year-old girl with short dark hair, red ribbon and yellow scarf, smiling a little too calmly; Sir Biscuit, a chibi gingerbread-cookie knight raising a teacup; and Wisp, a small candle-flame spirit. It is peaceful and lovely, except the entire outer border of the illustration is gently dissolving - the drawing's edges smear and fade into blank paper and faint pencil lines, unfinished, as if the picture is slowly being erased inward. No darkness, no monster: just a warm scene quietly coming apart at the edges. Beautiful, wrong, unbearably soft."
+    }
+  ]
+}

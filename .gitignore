@@ -1,0 +1,13 @@
+# dependencies (reinstall with `npm i playwright` for tests)
+node_modules/
+package-lock.json
+
+# raw AI-generation intermediates (108 MB) — regenerate via tools/gen_images.sh
+tools/_raw/
+
+# test screenshots
+tools/_shots/
+
+# OS / editor cruft
+.DS_Store
+*.log

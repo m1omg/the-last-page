@@ -1,0 +1,16 @@
+{
+  "name": "the-last-page",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "python3 -m http.server 4321"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "playwright": "^1.61.1"
+  },
+  "type": "module"
+}
