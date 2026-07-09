@@ -292,6 +292,14 @@ if (!(await g("!!window.__game.game.state.inventory.bulb"))) {
 }
 if (!(await g("!!window.__game.game.state.inventory.bulb"))) fail("no bulb");
 await goThrough(18, 9, "right", "bay_2");
+
+step = "keeper cottage interior";
+await goThrough(15, 9, "up", "keeper_home");
+await shot("10a_keeper_home");
+await walkTo(16, 5); await g(`window.__game.game.state.facing="up"`); await key("KeyZ"); await waitIdle(20000); // photo
+await walkTo(4, 6); await g(`window.__game.game.state.facing="left"`); await key("KeyZ"); await waitIdle(20000); // bed
+await goThrough(9, 12, "down", "bay_2");
+
 step = "keeper boss";
 await walkTo(10, 6); await g(`window.__game.game.state.facing="up"`); await key("KeyZ");
 {

@@ -299,25 +299,34 @@ function drawCG() {
   ctx.fillRect(0, 0, 960, 720);
   const img = assets.img(cg.img);
   if (img) {
-    const h = 560;
+    const h = 540;
     const w = Math.min(920, img.width * (h / img.height));
-    ctx.drawImage(img, 480 - w / 2, 20, w, h);
+    ctx.drawImage(img, 480 - w / 2, 16, w, h);
   } else {
-    drawBox(ctx, 120, 60, 720, 480, { seed: 55, fill: "#efe6d0" });
+    drawBox(ctx, 120, 60, 720, 460, { seed: 55, fill: "#efe6d0" });
     drawText(ctx, `[ ${cg.img} ]`, 480, 280, { size: 24, align: "center", color: "#8a7a68" });
   }
   const shownLines = cg.lines.slice(0, cg.lineIdx);
   const cur = cg.lines[cg.lineIdx];
-  let text = shownLines.slice(-2).join("\n");
+  // take a generous slice of history; MAX_LINES below is the single limit, so
+  // short lines fill the box instead of being capped by the history slice.
+  let text = shownLines.slice(-4).join("\n");
   if (cur != null) text += (text ? "\n" : "") + cur.slice(0, Math.floor(cg.shown));
-  drawBox(ctx, 60, 596, 840, 106, { seed: 66, fill: "rgba(24,20,16,0.85)", stroke: "#d8c8b0" });
+
+  // Wrap FIRST, then keep only the visual lines that fit, and size the box to
+  // them — logical lines can each wrap to several visual lines and overflow.
+  const LH = 26, MAX_LINES = 4;
   ctx.font = `19px ${FONT}`;
-  let y = 610;
-  for (const line of text.split("\n").slice(-3)) {
-    for (const l of wrapText(ctx, line, 790)) {
-      drawText(ctx, l, 86, y, { size: 19, color: "#f4e8d0" });
-      y += 26;
-    }
+  const visual = [];
+  for (const line of text.split("\n")) visual.push(...wrapText(ctx, line, 790));
+  const shown = visual.slice(-MAX_LINES); // keep the tail: the line being typed
+  const bh = Math.max(76, shown.length * LH + 30);
+  const by = 702 - bh;
+  drawBox(ctx, 60, by, 840, bh, { seed: 66, fill: "rgba(24,20,16,0.88)", stroke: "#d8c8b0" });
+  let y = by + 15;
+  for (const l of shown) {
+    drawText(ctx, l, 86, y, { size: 19, color: "#f4e8d0" });
+    y += LH;
   }
 }
 

@@ -106,6 +106,9 @@ export const SCRIPTS = {
   s_teatable: [
     n("Two cups and a teapot, set out from force of habit.\nNobody drank from either."),
   ],
+  s_fridge: [
+    n("The fridge hums its one long note. Inside: a casserole from a neighbour,\nlabelled with a date, untouched. Ren's chocolate milk, also untouched.\nNobody has been able to throw it out."),
+  ],
   s_kitchen: [
     { t: "if", flag: "interlude2", is: true, then: [
       n("A plate under plastic wrap, with a note in Mom's fast handwriting:\n'Ate at work. There's soup. I love you. We're okay.'\nThe 'we're okay' is underlined twice, like she's convincing both of you."),
@@ -479,8 +482,67 @@ export const SCRIPTS = {
   s_fight_bay_pair: [ { t: "battle", troop: "t_bay_pair", flagWin: "bay_en2" } ],
   s_fight_bay_pair2: [ { t: "battle", troop: "t_bay_pair", flagWin: "bay_en3" } ],
   s_keeper_cottage: [
-    n("The keeper's cottage. Cold stove, made bed, and on the table,\nlaid out in a perfect row: polish, a soft cloth, and a photograph of a bell."),
-    mira("neutral", "...he polishes it every day. Whatever it is he thinks he did."),
+    n("A small round cottage with a felt roof, tucked in beside the lighthouse.\nSocks on the line. Firewood stacked in a painfully straight pile."),
+    n("The little blue door is shut, but not locked.\nIt has the look of a door that is never locked, just in case."),
+    mira("neutral", "...Somebody lives here. Or waits here. I can't tell which."),
+  ],
+  s_enter_keeper_home: [
+    { t: "sfx", name: "sfx_door" },
+    { t: "fade", ms: 600 },
+    { t: "tp", map: "keeper_home", x: 9, y: 12, facing: "up" },
+    { t: "unfade", ms: 700 },
+  ],
+  s_keeper_exit: [
+    { t: "sfx", name: "sfx_door" },
+    { t: "fade", ms: 600 },
+    { t: "tp", map: "bay_2", x: 15, y: 9, facing: "down" },
+    { t: "unfade", ms: 700 },
+  ],
+  s_keeper_home_enter: [
+    { t: "if", flag: "keeper_home_seen", is: true, then: [], else: [
+      n("Inside, everything is put away.\nNot tidy the way a home is tidy - tidy the way a room is tidy\nwhen someone has been cleaning it instead of sleeping."),
+      { t: "flag", key: "keeper_home_seen", value: true },
+    ] },
+  ],
+  s_keeper_stove: [
+    n("A little iron stove, swept out and laid with fresh kindling,\nready to light. The kettle is filled. Everything is ready."),
+    n("Nothing has been lit in a long, long time."),
+  ],
+  s_keeper_window: [
+    n("A round window of button-glass. Through it: the lighthouse,\nand past the lighthouse, the whole grey sea."),
+    n("Whoever sat here sat facing the water. Waiting for something to come back."),
+  ],
+  s_keeper_table: [
+    n("On the table, laid out in a perfect row: a tin of polish,\nand a soft cloth folded into a neat little square."),
+    n("The cloth is worn thin in one spot, about the size of a small bell."),
+    { t: "if", flag: "bay_boss_done", is: true, then: [
+      mira("gloomy", "He polished it every single day. Like if he kept it bright enough,\nthe sound would stop meaning what it means."),
+    ], else: [
+      mira("neutral", "Somebody polishes something here. Every day, by the look of it."),
+    ] },
+  ],
+  s_keeper_photo: [
+    n("A small framed photograph: the lighthouse, lit, on a blue afternoon.\nIt has been dusted so often the frame's corners have gone pale."),
+    n("There's writing on the back, pressed against the glass, backwards\nand barely readable: 'IT WASN'T YOUR FAULT.'"),
+    n("Written in someone else's handwriting. Kept where he'd have to turn it over\nto read it."),
+    { t: "if", flag: "bay_boss_done", is: true, then: [
+      mira("gloomy", "...somebody told him. He just never turned it over."),
+      say("wisp", "s-some things you have to hear from inside, not outside."),
+      mira("gloomy", "Yeah. ...Yeah, I know."),
+    ], else: [] },
+  ],
+  s_keeper_chair: [
+    n("One chair, pulled out just slightly, as if its owner meant to sit back down."),
+  ],
+  s_keeper_bed: [
+    n("A narrow bed, made so tightly you could bounce a button off it.\nThe pillow has no dent in it at all."),
+    { t: "if", flag: "bay_boss_done", is: true, then: [
+      say("biscuit", "...He hasn't slept, m'lady. Not once. Not since."),
+    ], else: [] },
+  ],
+  s_keeper_boots: [
+    n("A pair of boots by the door, set side by side, toes pointing out.\nPointing at the door. Ready to go out."),
+    n("They haven't moved in years."),
   ],
   s_telescope: [
     n("Through the telescope: felt waves to the horizon.\nAnd stitched into the horizon in tiny thread, almost invisible: 'come back'."),

@@ -413,6 +413,7 @@ export const MAP_NAMES = {
   woods_2: "Candle Shrine",
   bay_1: "Button Bay",
   bay_2: "Lighthouse Cliff",
+  keeper_home: "The Keeper's Cottage",
   depths_1: "The Smudge Depths",
   depths_2: "The Last Page",
 };
