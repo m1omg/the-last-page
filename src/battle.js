@@ -11,6 +11,7 @@ import { assets } from "./assets.js";
 import { audio } from "./audio.js";
 import { input } from "./input.js";
 import { drawBox, drawText, drawBar, wrapText, FONT, EMOTION_COLOR, emotionTag } from "./ui.js";
+import { hotspots } from "./hotspots.js";
 
 const ADV = { giggly: "grumpy", grumpy: "gloomy", gloomy: "giggly" };
 
@@ -604,6 +605,10 @@ export class BattleScene {
       const h = Math.min(6, list.length) * 38 + 28;
       const bx = menu.kind === "main" ? 60 : 300, by = 560 - h;
       drawBox(ctx, bx, by, w, h, { seed: 41 });
+      hotspots.rows(bx, by + 8, w, 38, list.length, (i) => {
+        this.menu.index = i;
+        input.tap("confirm");
+      });
       list.forEach((o, i) => {
         const sel = i === menu.index;
         if (sel) drawText(ctx, "☞", bx + 14, by + 14 + i * 38, { size: 20, color: "#b8452e" });

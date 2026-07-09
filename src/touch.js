@@ -3,31 +3,60 @@
 //
 //   "gestures" : tap = confirm, press-and-drag = hold a direction, 2 fingers = cancel
 //   "dpad"     : a DOM overlay cross + Z/X buttons, anchored in the letterbox
-//   "off"      : neither
+//
+// Tapping a menu row activates it directly in BOTH schemes (see hotspots.js) —
+// dragging is for walking, not for moving menu cursors.
 import { input } from "./input.js";
+import { hotspots } from "./hotspots.js";
 import { loadSettings, updateSettings, TOUCH_SCHEMES } from "./settings.js";
 
 const DEADZONE = 24;   // css px before a drag counts as a direction
 const HOLD_MS = 250;   // stationary press becomes a held confirm
-const TAP_MS = 250;    // released within this, without moving, is a tap
+const TAP_MS = 300;    // released within this, without moving, is a tap
 const REPEAT_DELAY = 380;
 const REPEAT_RATE = 220;
 
-const LABELS = { gestures: "Gestures", dpad: "D-pad", off: "Off" };
+const LABELS = { gestures: "Gestures", dpad: "D-pad" };
 
 let scheme = "gestures";
 let capable = false;
 let root = null;          // #touchui element
 let stage = null;
+let canvas = null;
 
 // current held direction (only one at a time — movement is 4-way grid)
 let curDir = null;
 let repeatAt = 0;
 
-// gesture state machine
-const g = { id: null, x0: 0, y0: 0, t0: 0, state: "idle" };
+// gesture state machine. `moved` disqualifies a release from being a tap.
+const g = { id: null, x0: 0, y0: 0, t0: 0, state: "idle", moved: false };
+
+// hotspot callbacks queued by a tap, run at the top of the next frame so the
+// scene update that follows sees the cursor move + injected confirm.
+const pendingTaps = [];
 
 const now = () => performance.now();
+
+function toLogical(clientX, clientY) {
+  if (!canvas) return null;
+  const r = canvas.getBoundingClientRect();
+  if (!r.width || !r.height) return null;
+  const x = (clientX - r.left) * (960 / r.width);
+  const y = (clientY - r.top) * (720 / r.height);
+  if (x < 0 || y < 0 || x > 960 || y > 720) return null;
+  return { x, y };
+}
+
+// A tap resolves against the on-screen UI first. If any hotspots are showing
+// (a menu, a choice, a text box) then a tap that misses them all does nothing —
+// otherwise tapping blank space would activate whatever the cursor happened to
+// be on. With no hotspots at all (walking around) a tap is a plain confirm.
+function handleTap(clientX, clientY) {
+  const p = toLogical(clientX, clientY);
+  const fn = p ? hotspots.hitTest(p.x, p.y) : null;
+  if (fn) { pendingTaps.push(fn); return; }
+  if (hotspots.count() === 0) input.tap("confirm");
+}
 
 function setDir(d) {
   if (curDir === d) return;
@@ -53,14 +82,15 @@ function dirOf(dx, dy) {
                                      : (dy > 0 ? "down" : "up");
 }
 
+// Tap detection runs in BOTH schemes — tapping a menu row must work whether or
+// not the d-pad is on screen. Only dragging and the two-finger cancel are
+// exclusive to the gesture scheme.
 function onTouchStart(e) {
-  if (scheme !== "gestures") return;
   e.preventDefault();
   if (e.touches.length >= 2) {
-    // second finger = cancel. Abort whatever the first finger was doing.
+    if (scheme === "gestures") input.tap("cancel");
     resetGesture();
     g.state = "dead"; // ignore until every finger lifts
-    input.tap("cancel");
     return;
   }
   if (g.state !== "idle") return;
@@ -69,24 +99,27 @@ function onTouchStart(e) {
   g.x0 = t.clientX;
   g.y0 = t.clientY;
   g.t0 = now();
+  g.moved = false;
   g.state = "pending";
 }
 
 function onTouchMove(e) {
-  if (scheme !== "gestures") return;
   e.preventDefault();
-  if (g.state !== "pending" && g.state !== "move" && g.state !== "hold") return;
+  if (g.state === "dead" || g.state === "idle") return;
   const t = [...e.touches].find((x) => x.identifier === g.id);
   if (!t) return;
 
   const dx = t.clientX - g.x0;
   const dy = t.clientY - g.y0;
   const dist = Math.hypot(dx, dy);
+  if (dist >= DEADZONE) g.moved = true;
+
+  if (scheme !== "gestures") return; // d-pad: taps only, no drag-to-walk
+
   if (dist < DEADZONE) {
     if (g.state === "move") setDir(null); // back inside the deadzone: stop
     return;
   }
-
   if (g.state === "hold") input.release("confirm"); // drag out of a hold
   g.state = "move";
   setDir(dirOf(dx, dy));
@@ -98,15 +131,19 @@ function onTouchMove(e) {
 }
 
 function onTouchEnd(e) {
-  if (scheme !== "gestures") return;
   e.preventDefault();
   if (e.touches.length > 0) return; // wait until every finger is up
+  const t = e.changedTouches && e.changedTouches[0];
+  const wasTap = g.state === "pending" && !g.moved && now() - g.t0 <= TAP_MS;
+
   if (g.state === "dead") { g.state = "idle"; g.id = null; return; }
   if (g.state === "move") setDir(null);
   else if (g.state === "hold") input.release("confirm");
-  else if (g.state === "pending" && now() - g.t0 <= TAP_MS) input.tap("confirm");
+  else if (wasTap && t) handleTap(t.clientX, t.clientY);
+
   g.state = "idle";
   g.id = null;
+  g.moved = false;
 }
 
 // ------------------------------------------------------------ d-pad (DOM)
@@ -201,6 +238,7 @@ function applyScheme() {
 // ------------------------------------------------------------ api
 export const touch = {
   init(canvasEl) {
+    canvas = canvasEl;
     scheme = loadSettings().touch;
     const forced = new URLSearchParams(location.search).has("touch");
     capable = forced || navigator.maxTouchPoints > 0 || "ontouchstart" in window;
@@ -218,11 +256,19 @@ export const touch = {
     window.addEventListener("orientationchange", layout);
   },
 
-  // called once per frame from the main loop: handles the stationary-hold
-  // promotion and direction auto-repeat (menus read hit(), so they need edges).
+  // called once per frame from the main loop, BEFORE scene updates: runs queued
+  // tap callbacks, promotes a stationary press to a held confirm, and repeats
+  // held directions (menus read hit(), so they need fresh edges).
   update() {
+    if (pendingTaps.length) {
+      const fns = pendingTaps.splice(0, pendingTaps.length);
+      for (const fn of fns) fn();
+    }
     const t = now();
-    if (scheme === "gestures" && g.state === "pending" && t - g.t0 > HOLD_MS) {
+    // only promote to a held confirm if the touch is NOT over a tappable UI —
+    // otherwise resting a finger on a menu row would fire the row underneath.
+    if (scheme === "gestures" && g.state === "pending" && t - g.t0 > HOLD_MS
+        && hotspots.count() === 0) {
       g.state = "hold";
       input.press("confirm"); // like holding Z: advances once, then speeds text
     }

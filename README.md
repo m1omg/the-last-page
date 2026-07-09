@@ -33,7 +33,7 @@ loads assets with `fetch`, which needs http.
 
 ### Touch (phones & tablets)
 
-Two schemes, cycled with **Touch** on the title screen or **Options → Touch
+Two schemes, toggled with **Touch** on the title screen or **Options → Touch
 controls** in the pocket menu. The setting is remembered between sessions.
 
 - **Gestures** (default) — **tap** to confirm; **press and drag** to walk (keep
@@ -41,7 +41,10 @@ controls** in the pocket menu. The setting is remembered between sessions.
   to cancel / open the menu. Holding still fast-forwards text, like holding Z.
 - **D-pad** — an on-screen cross plus **Z** and **X** buttons. They sit in the
   letterbox beside or below the game, so they never cover the dialogue box.
-- **Off** — hides everything; keyboard only.
+
+In **both** schemes you can **tap a menu option to select it directly** — no
+swiping to move a cursor. Tapping outside the pocket menu closes it. Dragging
+is only ever for walking.
 
 Touch controls only appear on touch-capable devices, so desktop is unaffected.
 

@@ -5,6 +5,7 @@ import { assets } from "./assets.js";
 import { drawBox, drawText, wrapText, FONT } from "./ui.js";
 import { newGameState, saveGame, loadGame, hasSave, importSave } from "./state.js";
 import { touch } from "./touch.js";
+import { hotspots } from "./hotspots.js";
 import { Dialogue } from "./dialogue.js";
 import { runScript } from "./cutscene.js";
 import { MapScene } from "./map.js";
@@ -258,6 +259,10 @@ function drawTitle() {
   ctx.fillText("a small story about a shared sketchbook", 480, 176 + wobble);
 
   const opts = titleOptions();
+  hotspots.rows(370, 484, 420, 40, opts.length, (i) => {
+    game.title.index = i;
+    input.tap("confirm");
+  });
   ctx.textAlign = "left";
   opts.forEach((o, i) => {
     const sel = i === game.title.index;
@@ -413,6 +418,10 @@ function drawGameover() {
   drawText(ctx, "the page crumples...", 480, 240, { size: 36, align: "center", color: "#c8b8a0" });
   drawText(ctx, "but stories can be smoothed out and tried again.", 480, 300, { size: 20, align: "center", color: "#8a7a68" });
   const opts = hasSave() ? ["Return to the last warm lamp", "Back to the title"] : ["Back to the title"];
+  hotspots.rows(320, 414, 420, 48, opts.length, (i) => {
+    game.gameoverIndex = i;
+    input.tap("confirm");
+  });
   opts.forEach((o, i) => {
     const sel = i === game.gameoverIndex;
     if (sel) drawText(ctx, "☞", 330, 420 + i * 48, { size: 22, color: "#ffd9a0" });
@@ -455,7 +464,8 @@ function frame(now) {
   else if (game.mode === "credits") updateCredits(dt);
   else if (game.mode === "gameover") updateGameover(dt);
 
-  // draw
+  // draw — scenes re-register their tappable rows every frame
+  hotspots.clear();
   ctx.save();
   if (game.shakeMsLeft > 0) ctx.translate((Math.random() - 0.5) * 12, (Math.random() - 0.5) * 12);
   ctx.clearRect(-20, -20, 1000, 760);

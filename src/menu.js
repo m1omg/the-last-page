@@ -5,6 +5,7 @@ import { input } from "./input.js";
 import { drawBox, drawText, drawBar, EMOTION_COLOR } from "./ui.js";
 import { exportSave, importSave } from "./state.js";
 import { touch } from "./touch.js";
+import { hotspots } from "./hotspots.js";
 
 export class Menu {
   constructor(game) {
@@ -51,9 +52,9 @@ export class Menu {
           audio.sfx("sfx_confirm");
         } },
       { label: `Touch controls: ${touch.label()}`, run: () => {
-          const s = touch.cycle();
+          touch.cycle();
           audio.sfx("sfx_confirm");
-          this.toast(s === "off" ? "Touch controls off." : `Touch: ${touch.label()}.`);
+          this.toast(`Touch: ${touch.label()}.`);
         } },
       { label: "Return to the title", run: () => {
           this.open = false;
@@ -138,10 +139,21 @@ export class Menu {
     const st = this.game.state;
     ctx.fillStyle = "rgba(30,24,20,0.55)";
     ctx.fillRect(0, 0, 960, 720);
+    // tapping the dimmed area outside the panel closes the menu; the panel
+    // itself swallows taps so they don't fall through to that.
+    hotspots.add(0, 0, 960, 720, () => {
+      this.open = false;
+      this.sub = null;
+      audio.sfx("sfx_cancel");
+    });
+    hotspots.block(90, 60, 780, 600);
     drawBox(ctx, 90, 60, 780, 600, { seed: 77 });
     const tabs = ["Pockets", "Friends", "Options"];
     tabs.forEach((tName, i) => {
       const sel = i === this.tab;
+      hotspots.add(120 + i * 180, 78, 160, 48, () => {
+        if (this.tab !== i) { this.tab = i; this.index = 0; this.sub = null; audio.sfx("sfx_blip", 0.5); }
+      });
       drawBox(ctx, 120 + i * 180, 80, 160, 44, { seed: 80 + i, fill: sel ? "#f4d8a8" : "rgba(255,252,240,0.9)" });
       drawText(ctx, tName, 200 + i * 180, 90, { size: 20, bold: sel, align: "center", color: sel ? "#8a4a2a" : "#6a5a4a" });
     });
@@ -151,6 +163,9 @@ export class Menu {
       const list = this.itemList();
       if (!list.length) {
         drawText(ctx, "Your pockets are empty. (Sad crumb noise.)", 480, 300, { size: 20, align: "center", color: "#8a7a68" });
+      }
+      if (!this.sub) {
+        hotspots.rows(140, 152, 400, 40, list.length, (i) => { this.index = i; input.tap("confirm"); });
       }
       list.forEach((id, i) => {
         const item = ITEMS[id];
@@ -163,6 +178,7 @@ export class Menu {
       if (cur) drawText(ctx, ITEMS[cur].desc, 140, 590, { size: 18, color: "#5a4634" });
       if (this.sub) {
         drawBox(ctx, 560, 200, 260, st.party.length * 44 + 30, { seed: 99 });
+        hotspots.rows(565, 208, 250, 44, st.party.length, (i) => { this.sub.index = i; input.tap("confirm"); });
         st.party.forEach((m, i) => {
           const sel = i === this.sub.index;
           if (sel) drawText(ctx, "☞", 575, 216 + i * 44, { size: 20, color: "#b8452e" });
@@ -181,6 +197,7 @@ export class Menu {
       });
     } else {
       const list = this.optionItems();
+      hotspots.rows(200, 172, 460, 48, list.length, (i) => { this.index = i; input.tap("confirm"); });
       list.forEach((o, i) => {
         const sel = i === this.index;
         if (sel) drawText(ctx, "☞", 200, 180 + i * 50, { size: 20, color: "#b8452e" });

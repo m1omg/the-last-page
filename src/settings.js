@@ -5,7 +5,10 @@
 
 const SETTINGS_KEY = "the-last-page-settings";
 
-export const TOUCH_SCHEMES = ["gestures", "dpad", "off"];
+// Only two schemes. There used to be an "off" state, but on a touch device it
+// hid the d-pad AND disabled gestures, leaving no way to reach the toggle
+// again — a total lockout. Any stored "off" self-heals to "gestures" below.
+export const TOUCH_SCHEMES = ["gestures", "dpad"];
 
 const DEFAULTS = { touch: "gestures", muted: false };
 

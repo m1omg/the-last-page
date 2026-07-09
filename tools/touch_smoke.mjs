@@ -243,30 +243,93 @@ async function dialogueOverlap(page) {
   await ctx.close();
 }
 
-// ============================================================ OFF + persistence
+// ============================================================ NO LOCKOUT
 {
+  // a save left behind by the old 3-state build, where "off" bricked the game
   const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 800, height: 600 } });
   const page = await newPage(ctx, { settings: JSON.stringify({ touch: "off" }) });
-  const cdp = await cdpFor(page);
   await intoGame(page);
-  console.log("\n[off + persistence]");
+  console.log("\n[no lockout]");
 
-  ok("d-pad hidden when off", (await page.evaluate(`getComputedStyle(document.getElementById("touchui")).display`)) === "none");
-  const before = await pos(page);
-  await touchEvent(cdp, "touchStart", [pt(300, 300, 1)]);
-  await touchEvent(cdp, "touchMove", [pt(420, 300, 1)]);
-  await page.waitForTimeout(500);
-  await touchEvent(cdp, "touchEnd", []);
-  ok("swipe is inert when off", before === (await pos(page)));
+  ok("stored 'off' self-heals to gestures", (await page.evaluate("window.__game.touch.scheme")) === "gestures");
+  ok("only two schemes exist", (await page.evaluate("window.__game.touch.cycle()")) === "dpad");
+  ok("d-pad always cycles back to gestures", (await page.evaluate("window.__game.touch.cycle()")) === "gestures");
 
-  // cycle off -> gestures, then reload and confirm it stuck
-  const next = await page.evaluate("window.__game.touch.cycle()");
-  ok("cycle off → gestures", next === "gestures", next);
+  // persistence round-trip
+  await page.evaluate("window.__game.touch.setScheme('dpad')");
   await page.reload();
   await page.waitForFunction("window.__ready === true", null, { timeout: 20000 });
-  ok("scheme persisted across reload", (await page.evaluate("window.__game.touch.scheme")) === "gestures");
-  const stored = await page.evaluate(`JSON.parse(localStorage.getItem("the-last-page-settings")).touch`);
-  ok("persisted to localStorage", stored === "gestures", stored);
+  ok("scheme persisted across reload", (await page.evaluate("window.__game.touch.scheme")) === "dpad");
+  ok("persisted to localStorage", (await page.evaluate(`JSON.parse(localStorage.getItem("the-last-page-settings")).touch`)) === "dpad");
+
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+// ============================================================ TAP TO SELECT
+// tap a canvas point given in 960x720 logical coords
+async function tapLogical(page, cdp, lx, ly) {
+  const p = await page.evaluate(([lx, ly]) => {
+    const r = document.getElementById("game").getBoundingClientRect();
+    return { x: r.left + lx * (r.width / 960), y: r.top + ly * (r.height / 720) };
+  }, [lx, ly]);
+  await touchEvent(cdp, "touchStart", [pt(p.x, p.y, 1)]);
+  await page.waitForTimeout(60);
+  await touchEvent(cdp, "touchEnd", []);
+  await page.waitForTimeout(350);
+}
+
+for (const schemeUnderTest of ["gestures", "dpad"]) {
+  const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 900, height: 700 } });
+  const page = await newPage(ctx, { settings: JSON.stringify({ touch: schemeUnderTest }) });
+  const cdp = await cdpFor(page);
+  await intoGame(page);
+  console.log(`\n[tap to select — ${schemeUnderTest}]`);
+
+  // open the menu without any swiping
+  await page.evaluate("window.__game.game.openMenu()");
+  await page.waitForTimeout(250);
+  ok("menu open", await page.evaluate("window.__game.game.menu.open"));
+
+  // tap the "Options" tab directly (third tab, drawn at x 480..640, y 80..124)
+  await tapLogical(page, cdp, 560, 100);
+  ok("tapping a tab switches to it", (await page.evaluate("window.__game.game.menu.tab")) === 2);
+
+  // tap the 5th option row ("Touch controls"), rows at y = 180 + i*50
+  const before = await page.evaluate("window.__game.touch.scheme");
+  await tapLogical(page, cdp, 400, 180 + 4 * 50 + 10);
+  const after = await page.evaluate("window.__game.touch.scheme");
+  ok("tapping a row activates it (no swipe needed)", before !== after, `${before} → ${after}`);
+  ok("cursor moved to the tapped row", (await page.evaluate("window.__game.game.menu.index")) === 4);
+
+  // tapping outside the panel closes the menu
+  await tapLogical(page, cdp, 480, 700);
+  ok("tap outside closes the menu", !(await page.evaluate("window.__game.game.menu.open")));
+
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+// ============================================================ TITLE TAP + ESCAPE FROM D-PAD
+{
+  const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 900, height: 700 } });
+  const page = await newPage(ctx, { settings: JSON.stringify({ touch: "dpad" }) });
+  const cdp = await cdpFor(page);
+  await page.waitForTimeout(600);
+  console.log("\n[title tap / escape from d-pad]");
+  ok("on title", (await page.evaluate("window.__game.game.mode")) === "title");
+  ok("starts in dpad", (await page.evaluate("window.__game.touch.scheme")) === "dpad");
+
+  // options: Continue, New Game, Import save, Sound, Touch  (rows at 492 + i*40)
+  await tapLogical(page, cdp, 500, 492 + 4 * 40 + 8);
+  ok("tapping 'Touch:' on the title escapes d-pad → gestures",
+     (await page.evaluate("window.__game.touch.scheme")) === "gestures");
+  ok("still on the title", (await page.evaluate("window.__game.game.mode")) === "title");
+
+  // and tapping "New Game" starts the game, no swiping at all
+  await tapLogical(page, cdp, 500, 492 + 1 * 40 + 8);
+  await page.waitForTimeout(2500);
+  ok("tapping 'New Game' starts the game", (await page.evaluate("window.__game.game.mode")) === "map");
 
   ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
   await ctx.close();

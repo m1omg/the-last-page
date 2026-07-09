@@ -1,5 +1,6 @@
 // dialogue.js — dialogue box with typewriter text, portraits and choices.
 import { drawBox, drawText, wrapText, FONT } from "./ui.js";
+import { hotspots } from "./hotspots.js";
 import { assets } from "./assets.js";
 import { audio } from "./audio.js";
 import { input } from "./input.js";
@@ -139,6 +140,10 @@ export class Dialogue {
       const h = c.options.length * 40 + 30;
       const bx = 960 - w - 60, by = 720 - 196 - h - 40;
       drawBox(ctx, bx, by, w, h, { seed: 11 });
+      hotspots.rows(bx, by + 12, w, 40, c.options.length, (i) => {
+        c.index = i;
+        input.tap("confirm");
+      });
       c.options.forEach((o, i) => {
         if (i === c.index) {
           drawText(ctx, "☞", bx + 18, by + 18 + i * 40, { size: 22, color: "#b8452e" });
