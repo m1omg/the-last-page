@@ -7,7 +7,7 @@ const SETTINGS_KEY = "the-last-page-settings";
 
 export const TOUCH_SCHEMES = ["gestures", "dpad", "off"];
 
-const DEFAULTS = { touch: "gestures" };
+const DEFAULTS = { touch: "gestures", muted: false };
 
 export function loadSettings() {
   try {
@@ -17,6 +17,7 @@ export function loadSettings() {
     if (!s || typeof s !== "object") return { ...DEFAULTS };
     return {
       touch: TOUCH_SCHEMES.includes(s.touch) ? s.touch : DEFAULTS.touch,
+      muted: typeof s.muted === "boolean" ? s.muted : DEFAULTS.muted,
     };
   } catch (e) {
     return { ...DEFAULTS };
@@ -31,4 +32,10 @@ export function saveSettings(s) {
     console.warn("settings save failed", e);
     return false;
   }
+}
+
+// merge a partial change into the stored settings — callers must never clobber
+// the keys they don't own (mute vs touch scheme).
+export function updateSettings(patch) {
+  return saveSettings({ ...loadSettings(), ...patch });
 }

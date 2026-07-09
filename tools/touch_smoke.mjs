@@ -272,6 +272,54 @@ async function dialogueOverlap(page) {
   await ctx.close();
 }
 
+// ============================================================ SOUND toggle
+{
+  const ctx = await browser.newContext({ viewport: { width: 980, height: 740 } });
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on("pageerror", (e) => errs.push(String(e)));
+  await page.goto(base + "/");            // fresh browser: no save, no settings
+  await page.waitForFunction("window.__ready === true", null, { timeout: 20000 });
+  await page.waitForTimeout(400);
+  console.log("\n[sound]");
+
+  ok("starts unmuted", (await page.evaluate("window.__game.audio.isMuted()")) === false);
+
+  // no save → [New Game, Import save, Sound, Touch]. One press per frame:
+  // `pressed` is a Set, so two keydowns inside one frame collapse to one hit().
+  const settings = () => page.evaluate(`JSON.parse(localStorage.getItem("the-last-page-settings") || "null")`);
+  await page.keyboard.press("ArrowDown"); await page.waitForTimeout(140);
+  await page.keyboard.press("ArrowDown"); await page.waitForTimeout(140);
+  ok("cursor is on the Sound option", (await page.evaluate("window.__game.game.title.index")) === 2);
+  await page.keyboard.press("KeyZ");
+  await page.waitForTimeout(300);
+  ok("title Sound option mutes", (await page.evaluate("window.__game.audio.isMuted()")) === true);
+  ok("stays on the title (does not start a game)", (await page.evaluate("window.__game.game.mode")) === "title");
+  ok("mute written to settings", (await settings())?.muted === true);
+
+  // cycling touch must NOT clobber the mute flag (shared settings object)
+  await page.evaluate("window.__game.touch.cycle()");
+  await page.waitForTimeout(100);
+  const both = await settings();
+  ok("touch cycle preserves muted", both?.muted === true, JSON.stringify(both));
+  ok("touch cycle still saves scheme", both?.touch === "dpad", JSON.stringify(both));
+
+  await page.reload();
+  await page.waitForFunction("window.__ready === true", null, { timeout: 20000 });
+  await page.waitForTimeout(300);
+  ok("mute survives reload", (await page.evaluate("window.__game.audio.isMuted()")) === true);
+  ok("scheme survives reload too", (await page.evaluate("window.__game.touch.scheme")) === "dpad");
+
+  // M key still toggles, and unmuting persists as well
+  await page.keyboard.press("KeyM");
+  await page.waitForTimeout(250);
+  ok("M unmutes", (await page.evaluate("window.__game.audio.isMuted()")) === false);
+  ok("unmute persisted", (await settings())?.muted === false);
+
+  ok("no console errors", errs.length === 0, errs[0] || "");
+  await ctx.close();
+}
+
 // ============================================================ DESKTOP untouched
 {
   const ctx = await browser.newContext({ viewport: { width: 1000, height: 760 } }); // no hasTouch

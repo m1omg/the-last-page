@@ -175,6 +175,7 @@ window.__game = {
   state: null,
   input,
   touch,
+  audio,
   tp: (m, x, y) => game.teleport(m, x, y, "down"),
   setFlag: (k, v) => { game.state.flags[k] = v; },
   setPages: (n) => { game.state.pages = n; },
@@ -185,12 +186,13 @@ window.__game = {
 
 // ------------------------------------------------------------ title screen
 const TOUCH_OPT = "Touch: ";
+const SOUND_OPT = "Sound: ";
 
 function titleOptions() {
   const base = hasSave()
     ? ["Continue", "New Game", "Import save"]
     : ["New Game", "Import save"];
-  return [...base, TOUCH_OPT + touch.label()];
+  return [...base, SOUND_OPT + (audio.isMuted() ? "OFF" : "ON"), TOUCH_OPT + touch.label()];
 }
 
 function updateTitle(dt) {
@@ -208,6 +210,11 @@ function updateTitle(dt) {
       touch.cycle();
       audio.sfx("sfx_confirm");
       return; // cycles the scheme; does not start a game
+    }
+    if (choice.startsWith(SOUND_OPT)) {
+      audio.toggleMute();
+      audio.sfx("sfx_confirm"); // silent if we just muted, audible if we unmuted
+      return;
     }
     if (choice === "Import save") {
       audio.sfx("sfx_confirm");
@@ -254,8 +261,8 @@ function drawTitle() {
   ctx.textAlign = "left";
   opts.forEach((o, i) => {
     const sel = i === game.title.index;
-    const y = 498 + i * 44;
-    ctx.font = `${sel ? "bold " : ""}24px ${FONT}`;
+    const y = 492 + i * 40;
+    ctx.font = `${sel ? "bold " : ""}22px ${FONT}`;
     ctx.lineWidth = 6;
     ctx.strokeStyle = "rgba(58,40,28,0.85)";
     if (sel) { ctx.strokeText("☞", 400, y); ctx.fillStyle = "#ffd9a0"; ctx.fillText("☞", 400, y); }
@@ -265,11 +272,12 @@ function drawTitle() {
   });
   ctx.textAlign = "center";
   if (game.title.noticeT > 0) {
+    // above the option list — five options now reach close to the footer
     ctx.font = `bold 18px ${FONT}`;
     ctx.lineWidth = 5;
-    ctx.strokeText(game.title.notice, 480, 665);
+    ctx.strokeText(game.title.notice, 480, 452);
     ctx.fillStyle = "#ffd9a0";
-    ctx.fillText(game.title.notice, 480, 665);
+    ctx.fillText(game.title.notice, 480, 452);
   }
   ctx.font = `15px ${FONT}`;
   ctx.lineWidth = 4;

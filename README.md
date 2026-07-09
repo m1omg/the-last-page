@@ -28,7 +28,8 @@ loads assets with `fetch`, which needs http.
 - **Move** — arrow keys / WASD
 - **Confirm / interact** — Z, Enter or Space
 - **Menu / cancel** — X, Esc or Shift
-- **Sound on/off** — M
+- **Sound on/off** — M, or **Sound** on the title screen / **Options → Sound**
+  (remembered between sessions)
 
 ### Touch (phones & tablets)
 

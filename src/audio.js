@@ -1,11 +1,14 @@
 // audio.js — WAV loading, looping BGM with crossfade, one-shot SFX.
+import { loadSettings, updateSettings } from "./settings.js";
+
 const ctx = new (window.AudioContext || window.webkitAudioContext)();
 const master = ctx.createGain();
-master.gain.value = 1;
 master.connect(ctx.destination);
 
 const buffers = new Map();
-let muted = false;
+// restored from settings, so muting survives a reload
+let muted = loadSettings().muted;
+master.gain.value = muted ? 0 : 1;
 let current = null; // { name, source, gain }
 
 const BGM = ["bgm_title", "bgm_blank", "bgm_real", "bgm_meadow", "bgm_woods",
@@ -79,6 +82,7 @@ export const audio = {
   toggleMute() {
     muted = !muted;
     master.gain.value = muted ? 0 : 1;
+    updateSettings({ muted });
     return muted;
   },
   isMuted() { return muted; },

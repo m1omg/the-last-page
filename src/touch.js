@@ -5,7 +5,7 @@
 //   "dpad"     : a DOM overlay cross + Z/X buttons, anchored in the letterbox
 //   "off"      : neither
 import { input } from "./input.js";
-import { loadSettings, saveSettings, TOUCH_SCHEMES } from "./settings.js";
+import { loadSettings, updateSettings, TOUCH_SCHEMES } from "./settings.js";
 
 const DEADZONE = 24;   // css px before a drag counts as a direction
 const HOLD_MS = 250;   // stationary press becomes a held confirm
@@ -242,7 +242,7 @@ export const touch = {
     setDir(null);
     input.clearAll();
     scheme = s;
-    saveSettings({ touch: scheme });
+    updateSettings({ touch: scheme });
     applyScheme();
   },
 
