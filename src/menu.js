@@ -4,6 +4,7 @@ import { audio } from "./audio.js";
 import { input } from "./input.js";
 import { drawBox, drawText, drawBar, EMOTION_COLOR } from "./ui.js";
 import { exportSave, importSave } from "./state.js";
+import { touch } from "./touch.js";
 
 export class Menu {
   constructor(game) {
@@ -48,6 +49,11 @@ export class Menu {
       { label: `Sound: ${audio.isMuted() ? "OFF" : "ON"}`, run: () => {
           audio.toggleMute();
           audio.sfx("sfx_confirm");
+        } },
+      { label: `Touch controls: ${touch.label()}`, run: () => {
+          const s = touch.cycle();
+          audio.sfx("sfx_confirm");
+          this.toast(s === "off" ? "Touch controls off." : `Touch: ${touch.label()}.`);
         } },
       { label: "Return to the title", run: () => {
           this.open = false;

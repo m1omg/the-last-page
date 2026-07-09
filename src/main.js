@@ -4,6 +4,7 @@ import { audio } from "./audio.js";
 import { assets } from "./assets.js";
 import { drawBox, drawText, wrapText, FONT } from "./ui.js";
 import { newGameState, saveGame, loadGame, hasSave, importSave } from "./state.js";
+import { touch } from "./touch.js";
 import { Dialogue } from "./dialogue.js";
 import { runScript } from "./cutscene.js";
 import { MapScene } from "./map.js";
@@ -173,6 +174,7 @@ window.__game = {
   get game() { return game; },
   state: null,
   input,
+  touch,
   tp: (m, x, y) => game.teleport(m, x, y, "down"),
   setFlag: (k, v) => { game.state.flags[k] = v; },
   setPages: (n) => { game.state.pages = n; },
@@ -182,10 +184,13 @@ window.__game = {
 };
 
 // ------------------------------------------------------------ title screen
+const TOUCH_OPT = "Touch: ";
+
 function titleOptions() {
-  return hasSave()
+  const base = hasSave()
     ? ["Continue", "New Game", "Import save"]
     : ["New Game", "Import save"];
+  return [...base, TOUCH_OPT + touch.label()];
 }
 
 function updateTitle(dt) {
@@ -199,6 +204,11 @@ function updateTitle(dt) {
   if (input.hit("confirm")) {
     audio.unlock();
     const choice = opts[t.index];
+    if (choice.startsWith(TOUCH_OPT)) {
+      touch.cycle();
+      audio.sfx("sfx_confirm");
+      return; // cycles the scheme; does not start a game
+    }
     if (choice === "Import save") {
       audio.sfx("sfx_confirm");
       importSave((ok) => {
@@ -244,7 +254,7 @@ function drawTitle() {
   ctx.textAlign = "left";
   opts.forEach((o, i) => {
     const sel = i === game.title.index;
-    const y = 520 + i * 46;
+    const y = 498 + i * 44;
     ctx.font = `${sel ? "bold " : ""}24px ${FONT}`;
     ctx.lineWidth = 6;
     ctx.strokeStyle = "rgba(58,40,28,0.85)";
@@ -418,6 +428,10 @@ function frame(now) {
   }
   if (game.shakeMsLeft > 0) game.shakeMsLeft -= dt * 1000;
 
+  // promotes a stationary press into a held confirm, and repeats held
+  // directions so menus (which read hit()) step. Must run before scene updates.
+  touch.update();
+
   if (input.hit("mute")) audio.toggleMute();
 
   // update
@@ -469,6 +483,7 @@ function frame(now) {
   const unlock = () => audio.unlock();
   window.addEventListener("keydown", unlock, { once: true });
   window.addEventListener("pointerdown", unlock, { once: true });
+  touch.init(canvas);
   await Promise.all([assets.init(), audio.init()]);
   game.mode = "title";
   game.fade = 0;

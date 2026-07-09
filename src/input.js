@@ -36,4 +36,15 @@ export const input = {
   consume(k) { pressed.delete(k); },
   // simulate a key press (used by the debug/smoke harness)
   inject(k) { pressed.add(k); },
+
+  // ---- synthetic input, used by touch.js. These feed the SAME sets the
+  // keyboard feeds, so every scene works unchanged.
+  // keydown-equivalent: an edge on the transition, then held.
+  press(k) { if (!down.has(k)) pressed.add(k); down.add(k); },
+  // keyup-equivalent.
+  release(k) { down.delete(k); },
+  // a one-frame edge with no hold (a tap). Auto-repeat must use this, since
+  // press() on an already-held key produces no new edge.
+  tap(k) { pressed.add(k); },
+  clearAll() { down.clear(); pressed.clear(); },
 };

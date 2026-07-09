@@ -1,0 +1,298 @@
+// touch_smoke.mjs — headless verification of both touch schemes.
+//
+// Uses a CDP session (Input.dispatchTouchEvent) so we get REAL multi-touch,
+// which page.touchscreen cannot do. Covers gestures, d-pad, off, persistence,
+// and that desktop (no touch) is completely unaffected.
+import { chromium } from "playwright";
+import { createServer } from "node:http";
+import { readFile } from "node:fs/promises";
+import { join, dirname, extname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const root = join(dirname(fileURLToPath(import.meta.url)), "..");
+const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".jpg": "image/jpeg", ".wav": "audio/wav" };
+const server = createServer(async (req, res) => {
+  try {
+    let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
+    if (p === "/") p = "/index.html";
+    res.writeHead(200, { "content-type": MIME[extname(p)] || "application/octet-stream" });
+    res.end(await readFile(join(root, p)));
+  } catch { res.writeHead(404); res.end(); }
+});
+await new Promise((r) => server.listen(0, r));
+const base = `http://localhost:${server.address().port}`;
+
+let failures = 0;
+const ok = (name, cond, extra = "") => {
+  console.log(`${cond ? "  ok  " : " FAIL "} ${name}${extra ? "  — " + extra : ""}`);
+  if (!cond) failures++;
+};
+
+const browser = await chromium.launch({ args: ["--disable-dev-shm-usage"] });
+
+// a save that drops us straight onto a walkable map with no cutscene
+const SAVE = JSON.stringify({
+  version: 1, map: "blank_page", x: 9, y: 8, facing: "down",
+  flags: { intro_done: true, blank_intro_done: true }, pages: 1,
+  party: [{ id: "mira", name: "Mira", portrait: "mira", hp: 45, maxHp: 45, ink: 20, maxInk: 20, atk: 10, def: 6, spd: 8, emotion: "neutral", guard: false, skills: ["doodle_dash"] }],
+  inventory: { cookie: 1 }, steps: 0, playMs: 0,
+});
+
+async function newPage(ctx, { settings = null, query = "" } = {}) {
+  const page = await ctx.newPage();
+  const errs = [];
+  page.on("pageerror", (e) => errs.push(String(e)));
+  page.on("console", (m) => { if (m.type() === "error") errs.push(m.text()); });
+  // seed ONLY if absent — addInitScript re-runs on reload, and we must not
+  // clobber what the game itself wrote (that's what we're testing).
+  await page.addInitScript(([save, st]) => {
+    if (!localStorage.getItem("the-last-page-save")) localStorage.setItem("the-last-page-save", save);
+    if (st && !localStorage.getItem("the-last-page-settings")) localStorage.setItem("the-last-page-settings", st);
+  }, [SAVE, settings]);
+  await page.goto(base + "/" + query);
+  await page.waitForFunction("window.__ready === true", null, { timeout: 20000 });
+  page.__errs = errs;
+  return page;
+}
+
+async function intoGame(page) {
+  await page.waitForTimeout(400);
+  await page.keyboard.press("KeyZ"); // Continue
+  await page.waitForFunction("window.__game.game.mode==='map' && !window.__game.busy()", null, { timeout: 20000 });
+  await page.waitForTimeout(300);
+}
+
+// ---- raw touch dispatch
+async function cdpFor(page) { return await page.context().newCDPSession(page); }
+const pt = (x, y, id) => ({ x, y, id, radiusX: 12, radiusY: 12, force: 1 });
+async function touchEvent(cdp, type, points) {
+  await cdp.send("Input.dispatchTouchEvent", { type, touchPoints: points });
+}
+
+const pos = (page) => page.evaluate(() => {
+  const s = window.__game.game.state; return `${s.x},${s.y}`;
+});
+
+// ============================================================ GESTURES
+{
+  const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 800, height: 600 } });
+  const page = await newPage(ctx, { settings: JSON.stringify({ touch: "gestures" }) });
+  const cdp = await cdpFor(page);
+  await intoGame(page);
+  console.log("\n[gestures]");
+
+  ok("scheme is gestures", (await page.evaluate("window.__game.touch.scheme")) === "gestures");
+  ok("d-pad hidden", (await page.evaluate(`getComputedStyle(document.getElementById("touchui")).display`)) === "none");
+
+  // tap → confirm. Face the lamp and tap; a dialogue should open.
+  await page.evaluate(() => { const s = window.__game.game.state; s.x = 9; s.y = 7; s.facing = "left"; });
+  await page.waitForTimeout(150);
+  await touchEvent(cdp, "touchStart", [pt(400, 300, 1)]);
+  await page.waitForTimeout(60);
+  await touchEvent(cdp, "touchEnd", []);
+  await page.waitForTimeout(400);
+  ok("tap = confirm (opened dialogue)", await page.evaluate("window.__game.game.dialogue.active"));
+
+  // dismiss
+  for (let i = 0; i < 10 && await page.evaluate("window.__game.busy()"); i++) {
+    await page.keyboard.press("KeyZ"); await page.waitForTimeout(180);
+  }
+
+  // swipe-and-hold right → keeps walking
+  const before = await pos(page);
+  await touchEvent(cdp, "touchStart", [pt(300, 300, 1)]);
+  await page.waitForTimeout(50);
+  await touchEvent(cdp, "touchMove", [pt(400, 300, 1)]); // >DEADZONE right
+  await page.waitForTimeout(120);
+  const held = await page.evaluate(`window.__game.input.held("right")`);
+  ok("drag right holds 'right'", held);
+  await page.waitForTimeout(700); // let it walk a few tiles
+  const during = await pos(page);
+  ok("player kept moving while held", before !== during, `${before} → ${during}`);
+  await touchEvent(cdp, "touchEnd", []);
+  await page.waitForTimeout(350);
+  ok("direction released on lift", !(await page.evaluate(`window.__game.input.held("right")`)));
+  const afterLift = await pos(page);
+  await page.waitForTimeout(400);
+  ok("player stops after lift", afterLift === (await pos(page)));
+
+  // reversal: drag right then far left should flip direction
+  await touchEvent(cdp, "touchStart", [pt(300, 300, 1)]);
+  await touchEvent(cdp, "touchMove", [pt(400, 300, 1)]);
+  await page.waitForTimeout(80);
+  await touchEvent(cdp, "touchMove", [pt(300, 300, 1)]);
+  await touchEvent(cdp, "touchMove", [pt(250, 300, 1)]);
+  await page.waitForTimeout(80);
+  ok("reversing flips to 'left'", await page.evaluate(`window.__game.input.held("left")`));
+  await touchEvent(cdp, "touchEnd", []);
+  await page.waitForTimeout(200);
+
+  // two fingers → cancel → opens the menu
+  ok("menu closed before", !(await page.evaluate("window.__game.game.menu.open")));
+  await touchEvent(cdp, "touchStart", [pt(300, 300, 1)]);
+  await page.waitForTimeout(30);
+  await touchEvent(cdp, "touchStart", [pt(300, 300, 1), pt(500, 300, 2)]);
+  await page.waitForTimeout(300);
+  await touchEvent(cdp, "touchEnd", []);
+  await page.waitForTimeout(300);
+  ok("two fingers = cancel (menu opened)", await page.evaluate("window.__game.game.menu.open"));
+
+  // two fingers again → closes it
+  await touchEvent(cdp, "touchStart", [pt(300, 300, 1)]);
+  await page.waitForTimeout(30);
+  await touchEvent(cdp, "touchStart", [pt(300, 300, 1), pt(500, 300, 2)]);
+  await page.waitForTimeout(300);
+  await touchEvent(cdp, "touchEnd", []);
+  await page.waitForTimeout(400);
+  ok("two fingers again closes menu", !(await page.evaluate("window.__game.game.menu.open")));
+  ok("no stuck keys after gestures", (await page.evaluate(`["up","down","left","right","confirm","cancel"].filter(k=>window.__game.input.held(k)).length`)) === 0);
+
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+// ============================================================ D-PAD
+{
+  const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 800, height: 600 } });
+  const page = await newPage(ctx, { settings: JSON.stringify({ touch: "dpad" }) });
+  await intoGame(page);
+  console.log("\n[d-pad]");
+
+  ok("d-pad visible", (await page.evaluate(`getComputedStyle(document.getElementById("touchui")).display`)) === "block");
+
+  const before = await pos(page);
+  await page.locator(".tui-right").dispatchEvent("pointerdown", { pointerId: 1, isPrimary: true });
+  await page.waitForTimeout(600);
+  ok("holding ▶ walks", before !== (await pos(page)), `${before} → ${await pos(page)}`);
+  await page.locator(".tui-right").dispatchEvent("pointerup", { pointerId: 1, isPrimary: true });
+  await page.waitForTimeout(300);
+  const stopped = await pos(page);
+  await page.waitForTimeout(400);
+  ok("releasing ▶ stops", stopped === (await pos(page)));
+
+  // X button opens the menu
+  await page.locator(".tui-x").dispatchEvent("pointerdown", { pointerId: 2, isPrimary: true });
+  await page.waitForTimeout(120);
+  await page.locator(".tui-x").dispatchEvent("pointerup", { pointerId: 2, isPrimary: true });
+  await page.waitForTimeout(300);
+  ok("X opens the menu", await page.evaluate("window.__game.game.menu.open"));
+
+  // Z button confirms inside the menu (selects an item -> plays a sound, stays open)
+  await page.locator(".tui-x").dispatchEvent("pointerdown", { pointerId: 3, isPrimary: true });
+  await page.waitForTimeout(100);
+  await page.locator(".tui-x").dispatchEvent("pointerup", { pointerId: 3, isPrimary: true });
+  await page.waitForTimeout(300);
+  ok("X closes the menu", !(await page.evaluate("window.__game.game.menu.open")));
+
+  // Z = confirm: face lamp, press Z button
+  await page.evaluate(() => { const s = window.__game.game.state; s.x = 9; s.y = 7; s.facing = "left"; });
+  await page.waitForTimeout(150);
+  await page.locator(".tui-z").dispatchEvent("pointerdown", { pointerId: 4, isPrimary: true });
+  await page.waitForTimeout(100);
+  await page.locator(".tui-z").dispatchEvent("pointerup", { pointerId: 4, isPrimary: true });
+  await page.waitForTimeout(400);
+  ok("Z = confirm (opened dialogue)", await page.evaluate("window.__game.game.dialogue.active"));
+
+  ok("4:3 screen → no overlap with dialogue box", (await dialogueOverlap(page)).length === 0);
+  ok("4:3 screen reserves a bottom strip", await page.evaluate(`document.body.classList.contains("tui-bottom")`));
+
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+// the dialogue box spans y 524..692 of the 960x720 canvas, nearly full width
+async function dialogueOverlap(page) {
+  return page.evaluate(() => {
+    const c = document.getElementById("game").getBoundingClientRect();
+    const sx = c.width / 960, sy = c.height / 720;
+    const dlg = { l: c.left + 40 * sx, r: c.left + 920 * sx, t: c.top + 524 * sy, b: c.top + 692 * sy };
+    const hits = [];
+    for (const b of document.querySelectorAll(".tui-btn")) {
+      const r = b.getBoundingClientRect();
+      if (r.right > dlg.l && r.left < dlg.r && r.bottom > dlg.t && r.top < dlg.b) hits.push(b.className);
+    }
+    return hits;
+  });
+}
+
+// ============================================================ PHONE LANDSCAPE
+{
+  const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 844, height: 390 } });
+  const page = await newPage(ctx, { settings: JSON.stringify({ touch: "dpad" }) });
+  await intoGame(page);
+  console.log("\n[phone landscape 844x390]");
+  ok("d-pad visible", (await page.evaluate(`getComputedStyle(document.getElementById("touchui")).display`)) === "block");
+  ok("uses the side letterbox (no bottom strip)", !(await page.evaluate(`document.body.classList.contains("tui-bottom")`)));
+  ok("no overlap with dialogue box", (await dialogueOverlap(page)).length === 0);
+  ok("buttons are big enough to thumb (>=44px)", await page.evaluate(() =>
+    [...document.querySelectorAll(".tui-btn")].every((b) => b.getBoundingClientRect().width >= 44)));
+  await page.screenshot({ path: "tools/_shots/touch_landscape.png" });
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+// ============================================================ PHONE PORTRAIT
+{
+  const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 390, height: 844 } });
+  const page = await newPage(ctx, { settings: JSON.stringify({ touch: "dpad" }) });
+  await intoGame(page);
+  console.log("\n[phone portrait 390x844]");
+  ok("no overlap with dialogue box", (await dialogueOverlap(page)).length === 0);
+  await page.screenshot({ path: "tools/_shots/touch_portrait.png" });
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+// ============================================================ OFF + persistence
+{
+  const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 800, height: 600 } });
+  const page = await newPage(ctx, { settings: JSON.stringify({ touch: "off" }) });
+  const cdp = await cdpFor(page);
+  await intoGame(page);
+  console.log("\n[off + persistence]");
+
+  ok("d-pad hidden when off", (await page.evaluate(`getComputedStyle(document.getElementById("touchui")).display`)) === "none");
+  const before = await pos(page);
+  await touchEvent(cdp, "touchStart", [pt(300, 300, 1)]);
+  await touchEvent(cdp, "touchMove", [pt(420, 300, 1)]);
+  await page.waitForTimeout(500);
+  await touchEvent(cdp, "touchEnd", []);
+  ok("swipe is inert when off", before === (await pos(page)));
+
+  // cycle off -> gestures, then reload and confirm it stuck
+  const next = await page.evaluate("window.__game.touch.cycle()");
+  ok("cycle off → gestures", next === "gestures", next);
+  await page.reload();
+  await page.waitForFunction("window.__ready === true", null, { timeout: 20000 });
+  ok("scheme persisted across reload", (await page.evaluate("window.__game.touch.scheme")) === "gestures");
+  const stored = await page.evaluate(`JSON.parse(localStorage.getItem("the-last-page-settings")).touch`);
+  ok("persisted to localStorage", stored === "gestures", stored);
+
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+// ============================================================ DESKTOP untouched
+{
+  const ctx = await browser.newContext({ viewport: { width: 1000, height: 760 } }); // no hasTouch
+  const page = await newPage(ctx);
+  await intoGame(page);
+  console.log("\n[desktop]");
+
+  ok("not touch-capable", (await page.evaluate("window.__game.touch.capable")) === false);
+  ok("d-pad hidden on desktop", (await page.evaluate(`getComputedStyle(document.getElementById("touchui")).display`)) === "none");
+
+  const before = await pos(page);
+  await page.keyboard.down("ArrowRight");
+  await page.waitForTimeout(500);
+  await page.keyboard.up("ArrowRight");
+  await page.waitForTimeout(300);
+  ok("keyboard still moves the player", before !== (await pos(page)), `${before} → ${await pos(page)}`);
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+await browser.close();
+server.close();
+console.log(failures ? `\n${failures} FAILURE(S)` : "\nTOUCH SMOKE OK — all schemes verified");
+process.exit(failures ? 1 : 0);

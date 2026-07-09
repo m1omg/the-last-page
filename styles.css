@@ -4,17 +4,98 @@ html, body {
   height: 100%;
   background: #14121a;
   overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-user-select: none;
+  user-select: none;
 }
 #stage {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
+  box-sizing: border-box;
+  touch-action: none;
 }
 #game {
   image-rendering: auto;
-  max-width: 100vw;
-  max-height: 100vh;
+  max-width: 100%;
+  max-height: 100%;
   aspect-ratio: 4 / 3;
   box-shadow: 0 0 60px rgba(0, 0, 0, 0.7);
+  touch-action: none;
+}
+/* When the screen has no side letterbox to hold the d-pad, reserve a strip at
+   the bottom so the controls can never cover the dialogue box. */
+body.tui-bottom #stage { padding-bottom: var(--tui-strip, 216px); }
+
+/* ---------------------------------------------------------- touch d-pad
+   A DOM overlay rather than canvas drawing: on a phone these clusters land
+   in the letterbox bars, so they never cover the dialogue box. */
+#touchui {
+  --tui-cell: 60px;
+  display: none;
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+.tui-pad,
+.tui-actions {
+  position: absolute;
+  bottom: max(10px, env(safe-area-inset-bottom, 0px));
+}
+.tui-pad {
+  left: max(8px, env(safe-area-inset-left, 0px));
+  display: grid;
+  grid-template-columns: repeat(3, var(--tui-cell));
+  grid-template-rows: repeat(3, var(--tui-cell));
+}
+.tui-actions {
+  right: max(8px, env(safe-area-inset-right, 0px));
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+}
+.tui-btn {
+  pointer-events: auto;
+  touch-action: none;
+  -webkit-tap-highlight-color: transparent;
+  margin: 0;
+  padding: 0;
+  font-family: "Comic Sans MS", "Chalkboard SE", "Segoe Print", "Patrick Hand", cursive, sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #5a4634;
+  background: rgba(255, 246, 227, 0.82);
+  border: 3px solid #2a2320;
+  border-radius: 14px;
+  box-shadow: 0 3px 0 rgba(42, 35, 32, 0.5);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.tui-btn.tui-on {
+  background: rgba(244, 216, 168, 0.95);
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(42, 35, 32, 0.5);
+}
+.tui-up    { grid-area: 1 / 2; }
+.tui-left  { grid-area: 2 / 1; }
+.tui-right { grid-area: 2 / 3; }
+.tui-down  { grid-area: 3 / 2; }
+
+.tui-z, .tui-x {
+  border-radius: 50%;
+  width: calc(var(--tui-cell) * 1.25);
+  height: calc(var(--tui-cell) * 1.25);
+  font-size: 26px;
+}
+.tui-x {
+  width: calc(var(--tui-cell) * 1.05);
+  height: calc(var(--tui-cell) * 1.05);
+  font-size: 22px;
+  background: rgba(244, 200, 190, 0.82);
 }

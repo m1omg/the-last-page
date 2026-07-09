@@ -23,10 +23,26 @@ loads assets with `fetch`, which needs http.
 
 ## Controls
 
+### Keyboard
+
 - **Move** — arrow keys / WASD
 - **Confirm / interact** — Z, Enter or Space
 - **Menu / cancel** — X, Esc or Shift
 - **Sound on/off** — M
+
+### Touch (phones & tablets)
+
+Two schemes, cycled with **Touch** on the title screen or **Options → Touch
+controls** in the pocket menu. The setting is remembered between sessions.
+
+- **Gestures** (default) — **tap** to confirm; **press and drag** to walk (keep
+  holding to keep walking, drag the other way to turn around); **two fingers**
+  to cancel / open the menu. Holding still fast-forwards text, like holding Z.
+- **D-pad** — an on-screen cross plus **Z** and **X** buttons. They sit in the
+  letterbox beside or below the game, so they never cover the dialogue box.
+- **Off** — hides everything; keyboard only.
+
+Touch controls only appear on touch-capable devices, so desktop is unaffected.
 
 Saving works two ways:
 
@@ -71,6 +87,8 @@ doodle-battles, no self-harm. It aims for a soft landing.
 node tools/validate.mjs     # static integrity: maps, scripts, assets, data
 node tools/smoke.mjs        # headless full playthrough (true ending)
 SMOKE_ENDING=page node tools/smoke.mjs   # dream ending path
+node tools/touch_smoke.mjs  # both touch schemes, via real multi-touch (CDP)
+node tools/collision_audit.mjs && python3 tools/collision_audit.py  # art vs collision overlays
 ```
 
 Debug mode: add `?debug` to the URL (collision overlay + `window.__game`
