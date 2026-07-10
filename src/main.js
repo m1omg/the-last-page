@@ -2,9 +2,11 @@
 import { input } from "./input.js";
 import { audio } from "./audio.js";
 import { assets } from "./assets.js";
-import { drawBox, drawText, wrapText, FONT } from "./ui.js";
+import { drawBox, drawText, wrapText, FONT, TEXT_SCALE, loadFonts } from "./ui.js";
+import * as uiNS from "./ui.js"; // namespace object tracks the live FONT/TEXT_SCALE bindings
 import { newGameState, saveGame, loadGame, hasSave, importSave } from "./state.js";
 import { touch } from "./touch.js";
+import { textmode } from "./textmode.js";
 import { hotspots } from "./hotspots.js";
 import { Dialogue } from "./dialogue.js";
 import { runScript } from "./cutscene.js";
@@ -176,6 +178,8 @@ window.__game = {
   state: null,
   input,
   touch,
+  textmode,
+  ui: uiNS,
   audio,
   tp: (m, x, y) => game.teleport(m, x, y, "down"),
   setFlag: (k, v) => { game.state.flags[k] = v; },
@@ -188,12 +192,18 @@ window.__game = {
 // ------------------------------------------------------------ title screen
 const TOUCH_OPT = "Touch: ";
 const SOUND_OPT = "Sound: ";
+const TEXT_OPT = "Text: ";
+
+// six rows at most, so they're packed tighter and start higher than the old
+// five: at 492+i*40 the sixth row ran into the footer hint drawn at y=690.
+const OPT_Y0 = 464, OPT_STEP = 38;
 
 function titleOptions() {
   const base = hasSave()
     ? ["Continue", "New Game", "Import save"]
     : ["New Game", "Import save"];
-  return [...base, SOUND_OPT + (audio.isMuted() ? "OFF" : "ON"), TOUCH_OPT + touch.label()];
+  return [...base, SOUND_OPT + (audio.isMuted() ? "OFF" : "ON"),
+          TOUCH_OPT + touch.label(), TEXT_OPT + textmode.label()];
 }
 
 function updateTitle(dt) {
@@ -211,6 +221,11 @@ function updateTitle(dt) {
       touch.cycle();
       audio.sfx("sfx_confirm");
       return; // cycles the scheme; does not start a game
+    }
+    if (choice.startsWith(TEXT_OPT)) {
+      textmode.cycle();
+      audio.sfx("sfx_confirm");
+      return;
     }
     if (choice.startsWith(SOUND_OPT)) {
       audio.toggleMute();
@@ -259,14 +274,14 @@ function drawTitle() {
   ctx.fillText("a small story about a shared sketchbook", 480, 176 + wobble);
 
   const opts = titleOptions();
-  hotspots.rows(370, 484, 420, 40, opts.length, (i) => {
+  hotspots.rows(370, OPT_Y0 - 8, 420, OPT_STEP, opts.length, (i) => {
     game.title.index = i;
     input.tap("confirm");
   });
   ctx.textAlign = "left";
   opts.forEach((o, i) => {
     const sel = i === game.title.index;
-    const y = 492 + i * 40;
+    const y = OPT_Y0 + i * OPT_STEP;
     ctx.font = `${sel ? "bold " : ""}22px ${FONT}`;
     ctx.lineWidth = 6;
     ctx.strokeStyle = "rgba(58,40,28,0.85)";
@@ -277,12 +292,12 @@ function drawTitle() {
   });
   ctx.textAlign = "center";
   if (game.title.noticeT > 0) {
-    // above the option list — five options now reach close to the footer
+    // above the option list — six options now reach close to the footer
     ctx.font = `bold 18px ${FONT}`;
     ctx.lineWidth = 5;
-    ctx.strokeText(game.title.notice, 480, 452);
+    ctx.strokeText(game.title.notice, 480, 432);
     ctx.fillStyle = "#ffd9a0";
-    ctx.fillText(game.title.notice, 480, 452);
+    ctx.fillText(game.title.notice, 480, 432);
   }
   ctx.font = `15px ${FONT}`;
   ctx.lineWidth = 4;
@@ -338,8 +353,9 @@ function drawCG() {
 
   // Wrap FIRST, then keep only the visual lines that fit, and size the box to
   // them — logical lines can each wrap to several visual lines and overflow.
-  const LH = 26, MAX_LINES = 4;
-  ctx.font = `19px ${FONT}`;
+  const cap = Math.round(19 * TEXT_SCALE);
+  const LH = Math.round(26 * TEXT_SCALE), MAX_LINES = 4;
+  ctx.font = `${cap}px ${FONT}`;
   const visual = [];
   for (const line of text.split("\n")) visual.push(...wrapText(ctx, line, 790));
   const shown = visual.slice(-MAX_LINES); // keep the tail: the line being typed
@@ -348,7 +364,7 @@ function drawCG() {
   drawBox(ctx, 60, by, 840, bh, { seed: 66, fill: "rgba(24,20,16,0.88)", stroke: "#d8c8b0" });
   let y = by + 15;
   for (const l of shown) {
-    drawText(ctx, l, 86, y, { size: 19, color: "#f4e8d0" });
+    drawText(ctx, l, 86, y, { size: cap, color: "#f4e8d0" });
     y += LH;
   }
 }
@@ -502,7 +518,8 @@ function frame(now) {
   window.addEventListener("keydown", unlock, { once: true });
   window.addEventListener("pointerdown", unlock, { once: true });
   touch.init(canvas);
-  await Promise.all([assets.init(), audio.init()]);
+  textmode.init(); // needs touch.capable to resolve "auto"
+  await Promise.all([assets.init(), audio.init(), loadFonts()]);
   game.mode = "title";
   game.fade = 0;
   game.fadeTarget = 1;

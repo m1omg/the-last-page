@@ -10,7 +10,7 @@ import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const shots = join(root, "tools", "_shots");
-const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".jpg": "image/jpeg", ".wav": "audio/wav", ".json": "application/json" };
+const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".jpg": "image/jpeg", ".wav": "audio/wav", ".json": "application/json", ".woff2": "font/woff2" };
 
 const server = createServer(async (req, res) => {
   try {
@@ -208,6 +208,18 @@ await page.waitForTimeout(250);
 if (await g("window.__game.game.menu.open")) await fail("menu didn't close on X");
 if ((await mode()) !== "map") await fail("not back on map after closing menu");
 
+step = "picture above the bed";
+// (5,4) is the only walkable tile beside the picture. Pressing UP there used to
+// describe the WINDOW; the picture was only reachable by facing left into the
+// bed, which no player would ever try.
+await walkTo(5, 4);
+await g(`window.__game.game.state.facing = "up"`);
+await key("KeyZ");
+await page.waitForTimeout(400);
+const picText = await g("window.__game.game.dialogue.text || ''");
+if (!/drawing/i.test(picText)) await fail(`Z at (5,4) facing up should describe the picture, got: ${JSON.stringify(picText)}`);
+await waitIdle();
+
 step = "intro bed";
 await walkTo(5, 6);
 await g(`window.__game.game.state.facing = "left"`);
@@ -219,7 +231,9 @@ if ((await g("window.__game.game.state.map")) !== "blank_page") fail("not in bla
 await shot("03_blank_page");
 
 step = "meadow";
-await goThrough(1, 7, "left", "meadow_1");
+// starts at (2,7), one tile OUTSIDE the doorway: stepping onto the painted door
+// at column 1 must transfer. Starting at (1,7) would only prove column 0 works.
+await goThrough(2, 7, "left", "meadow_1");
 await shot("04_meadow");
 // grab teacup
 await walkTo(3, 4); await g(`window.__game.game.state.facing="up"`); await key("KeyZ"); await waitIdle();
@@ -285,7 +299,7 @@ await shot("09_interlude2");
 step = "bay";
 await g(`window.__game.tp("blank_page", 17, 7)`);
 await page.waitForTimeout(300); await waitIdle();
-await goThrough(18, 7, "right", "bay_1");
+await goThrough(17, 7, "right", "bay_1"); // step onto the painted door at col 18
 await walkTo(17, 8); await g(`window.__game.game.state.facing="down"`); await key("KeyZ"); await waitIdle(); // barrel → bulb
 if (!(await g("!!window.__game.game.state.inventory.bulb"))) {
   await walkTo(15, 8); await g(`window.__game.game.state.facing="right"`); await key("KeyZ"); await waitIdle();
@@ -348,6 +362,16 @@ await waitIdle(40000);
 if ((await g("window.__game.game.state.map")) !== "real_bedroom") fail("no ending walk");
 await walkTo(9, 12); await pressToward("down", 1); await waitIdle(20000); // hall
 if ((await g("window.__game.game.state.map")) !== "real_hall") fail("no hall in ending");
+// Mom's door is painted across the alcove (cols 4-5); standing in it and
+// pressing Z must listen at her door, not describe bare hallway.
+await walkTo(4, 2);
+await g(`window.__game.game.state.facing = "up"`);
+await key("KeyZ");
+await page.waitForTimeout(400);
+const momText = await g("window.__game.game.dialogue.text || ''");
+if (!/Mom's door/i.test(momText)) await fail(`Z inside Mom's alcove gave: ${JSON.stringify(momText)}`);
+await waitIdle();
+await shot("13b_mom_door");
 await walkTo(9, 12); await pressToward("down", 1);
 await waitChoice(20000); await chooseOption(0); // go outside
 await waitIdle(20000);

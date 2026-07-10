@@ -10,7 +10,7 @@ import { join, dirname, extname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".jpg": "image/jpeg", ".wav": "audio/wav" };
+const MIME = { ".html": "text/html", ".js": "text/javascript", ".css": "text/css", ".png": "image/png", ".jpg": "image/jpeg", ".wav": "audio/wav", ".woff2": "font/woff2" };
 const server = createServer(async (req, res) => {
   try {
     let p = decodeURIComponent(new URL(req.url, "http://x").pathname);
@@ -320,14 +320,19 @@ for (const schemeUnderTest of ["gestures", "dpad"]) {
   ok("on title", (await page.evaluate("window.__game.game.mode")) === "title");
   ok("starts in dpad", (await page.evaluate("window.__game.touch.scheme")) === "dpad");
 
-  // options: Continue, New Game, Import save, Sound, Touch  (rows at 492 + i*40)
-  await tapLogical(page, cdp, 500, 492 + 4 * 40 + 8);
+  // options: Continue, New Game, Import save, Sound, Touch, Text
+  // rows at OPT_Y0 + i*OPT_STEP (main.js) — six of them now, so 464 + i*38
+  const DRAW_Y = (i) => 464 + i * 38;
+  const ROW = (i) => DRAW_Y(i) + 8; // tap the middle of the row
+  await tapLogical(page, cdp, 500, ROW(4)); // Touch
   ok("tapping 'Touch:' on the title escapes d-pad → gestures",
      (await page.evaluate("window.__game.touch.scheme")) === "gestures");
   ok("still on the title", (await page.evaluate("window.__game.game.mode")) === "title");
+  // the 6th row (22px tall, drawn from its top) must clear the footer at y=690
+  ok("six title rows still fit above the footer", DRAW_Y(5) + 22 < 690, `last row bottom ${DRAW_Y(5) + 22}`);
 
   // and tapping "New Game" starts the game, no swiping at all
-  await tapLogical(page, cdp, 500, 492 + 1 * 40 + 8);
+  await tapLogical(page, cdp, 500, ROW(1));
   await page.waitForTimeout(2500);
   ok("tapping 'New Game' starts the game", (await page.evaluate("window.__game.game.mode")) === "map");
 
@@ -399,6 +404,59 @@ for (const schemeUnderTest of ["gestures", "dpad"]) {
   await page.keyboard.up("ArrowRight");
   await page.waitForTimeout(300);
   ok("keyboard still moves the player", before !== (await pos(page)), `${before} → ${await pos(page)}`);
+  ok("mobile text mode OFF on desktop (auto)", (await page.evaluate("window.__game.textmode.mode")) === "auto"
+      && !(await page.evaluate(`window.__game.ui.FONT.startsWith('"Patrick Hand"')`)));
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+// ---------------------------------------------------------------- text mode
+{
+  const ctx = await browser.newContext({ viewport: { width: 390, height: 780 }, hasTouch: true, isMobile: true });
+  const page = await newPage(ctx);
+  await intoGame(page);
+  console.log("\n[mobile text mode]");
+
+  ok("Patrick Hand is bundled and loaded",
+     await page.evaluate(`document.fonts.check('21px "Patrick Hand"')`));
+  // check() can pass on a fallback, so prove the glyphs really differ
+  const widths = await page.evaluate(`(() => {
+    const c = document.createElement("canvas").getContext("2d");
+    c.font = '21px "Patrick Hand"'; const a = c.measureText("Mira waved back.").width;
+    c.font = "21px sans-serif";     const b = c.measureText("Mira waved back.").width;
+    return [a, b];
+  })()`);
+  ok("Patrick Hand actually renders (not a silent fallback)", Math.abs(widths[0] - widths[1]) > 1, `${widths[0]} vs ${widths[1]}`);
+
+  ok("mobile mode ON by default on a touch device",
+     await page.evaluate(`window.__game.ui.FONT.startsWith('"Patrick Hand"')`));
+  ok("dialogue text ~10% larger", (await page.evaluate("window.__game.ui.TEXT_SCALE")) === 1.1);
+
+  // auto -> on -> off, and off must go back to the storybook stack
+  await page.evaluate("window.__game.textmode.cycle()"); // on
+  await page.evaluate("window.__game.textmode.cycle()"); // off
+  ok("cycling to Storybook restores the original stack",
+     (await page.evaluate("window.__game.textmode.mode")) === "off"
+     && (await page.evaluate("window.__game.ui.TEXT_SCALE")) === 1);
+
+  // must not clobber the neighbouring settings keys
+  await page.evaluate("window.__game.game.audio ? 0 : 0");
+  const stored = JSON.parse(await page.evaluate(`localStorage.getItem("the-last-page-settings")`));
+  // the Options tab grew a 7th row — make sure it still clears the hint lines
+  await page.evaluate(`(() => { const g = window.__game.game; g.menu.show(); g.menu.tab = 2; })()`);
+  await page.waitForTimeout(300);
+  const geom = await page.evaluate("window.__game.game.menu.optGeom");
+  ok("Options rows clear the hint text", geom && geom.y0 + (geom.rows - 1) * geom.step + 22 < geom.hintY,
+     JSON.stringify(geom));
+  await page.evaluate(`window.__game.game.menu.open = false`);
+
+  ok("mobile setting persisted", stored.mobile === "off", JSON.stringify(stored));
+  ok("touch scheme not clobbered", stored.touch === "gestures", JSON.stringify(stored));
+  ok("mute flag not clobbered", typeof stored.muted === "boolean", JSON.stringify(stored));
+
+  await page.reload();
+  await page.waitForFunction("window.__ready === true", null, { timeout: 20000 });
+  ok("survives a reload", (await page.evaluate("window.__game.textmode.mode")) === "off");
   ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
   await ctx.close();
 }

@@ -1,5 +1,5 @@
 // dialogue.js — dialogue box with typewriter text, portraits and choices.
-import { drawBox, drawText, wrapText, FONT } from "./ui.js";
+import { drawBox, drawText, wrapText, FONT, TEXT_SCALE } from "./ui.js";
 import { hotspots } from "./hotspots.js";
 import { assets } from "./assets.js";
 import { audio } from "./audio.js";
@@ -90,15 +90,22 @@ export class Dialogue {
   draw(ctx) {
     if (!this.active) return;
     const W = 960, H = 720;
+    // mobile mode enlarges dialogue text; read the live binding here, not at
+    // import time, and use the same sizes to MEASURE and to DRAW or the
+    // auto-sized box comes out too short for its own text.
+    const body = Math.round(21 * TEXT_SCALE);
+    const nameSize = Math.round(20 * TEXT_SCALE);
+    const lh = Math.round(28 * TEXT_SCALE);
+    const nameH = Math.round(30 * TEXT_SCALE);
     if (this.queue != null || (!this.choice && this.active)) {
       const bx = 40, bw = W - 80;
       const portraitKey = this.who && PORTRAITS[this.who] ? PORTRAITS[this.who](this.face) : null;
       const img = portraitKey ? assets.img(portraitKey) : null;
       // size the box to fit the full text so long lines never overflow
-      ctx.font = `21px ${FONT}`;
+      ctx.font = `${body}px ${FONT}`;
       const tx0 = img ? bx + 16 + 128 + 20 : bx + 26;
       const lineCount = wrapText(ctx, this.text, bx + bw - tx0 - 26).length;
-      const textH = (this.who ? 30 : 0) + lineCount * 28;
+      const textH = (this.who ? nameH : 0) + lineCount * lh;
       const bh = Math.max(168, textH + 44, img ? 168 : 0);
       const by = H - bh - 28;
       drawBox(ctx, bx, by, bw, bh, { seed: 7 });
@@ -117,16 +124,16 @@ export class Dialogue {
       let ty = by + 18;
       if (this.who) {
         const nm = NAMES[this.who] || this.who;
-        drawText(ctx, nm, tx, ty, { size: 20, bold: true, color: "#7a4a2a" });
-        ty += 30;
+        drawText(ctx, nm, tx, ty, { size: nameSize, bold: true, color: "#7a4a2a" });
+        ty += nameH;
       }
       const visible = this.text.slice(0, Math.floor(this.shown));
-      ctx.font = `21px ${FONT}`;
+      ctx.font = `${body}px ${FONT}`;
       const maxW = bx + bw - tx - 26;
       let y = ty;
       for (const line of wrapText(ctx, visible, maxW)) {
-        drawText(ctx, line, tx, y, { size: 21 });
-        y += 28;
+        drawText(ctx, line, tx, y, { size: body });
+        y += lh;
       }
       if (this.done && this.queue) {
         const t = performance.now() / 300;
@@ -135,21 +142,22 @@ export class Dialogue {
     }
     if (this.choice) {
       const c = this.choice;
-      ctx.font = `21px ${FONT}`;
+      const rowH = Math.round(40 * TEXT_SCALE);
+      ctx.font = `${body}px ${FONT}`;
       const w = Math.max(...c.options.map(o => ctx.measureText(o.label).width)) + 90;
-      const h = c.options.length * 40 + 30;
+      const h = c.options.length * rowH + 30;
       const bx = 960 - w - 60, by = 720 - 196 - h - 40;
       drawBox(ctx, bx, by, w, h, { seed: 11 });
-      hotspots.rows(bx, by + 12, w, 40, c.options.length, (i) => {
+      hotspots.rows(bx, by + 12, w, rowH, c.options.length, (i) => {
         c.index = i;
         input.tap("confirm");
       });
       c.options.forEach((o, i) => {
         if (i === c.index) {
-          drawText(ctx, "☞", bx + 18, by + 18 + i * 40, { size: 22, color: "#b8452e" });
+          drawText(ctx, "☞", bx + 18, by + 18 + i * rowH, { size: Math.round(22 * TEXT_SCALE), color: "#b8452e" });
         }
-        drawText(ctx, o.label, bx + 52, by + 18 + i * 40, {
-          size: 21, bold: i === c.index,
+        drawText(ctx, o.label, bx + 52, by + 18 + i * rowH, {
+          size: body, bold: i === c.index,
           color: i === c.index ? "#b8452e" : "#2a2320",
         });
       });

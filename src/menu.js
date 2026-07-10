@@ -5,6 +5,7 @@ import { input } from "./input.js";
 import { drawBox, drawText, drawBar, EMOTION_COLOR } from "./ui.js";
 import { exportSave, importSave } from "./state.js";
 import { touch } from "./touch.js";
+import { textmode } from "./textmode.js";
 import { hotspots } from "./hotspots.js";
 
 export class Menu {
@@ -55,6 +56,11 @@ export class Menu {
           touch.cycle();
           audio.sfx("sfx_confirm");
           this.toast(`Touch: ${touch.label()}.`);
+        } },
+      { label: `Text: ${textmode.label()}`, run: () => {
+          textmode.cycle();
+          audio.sfx("sfx_confirm");
+          this.toast(`Text: ${textmode.label()}.`);
         } },
       { label: "Return to the title", run: () => {
           this.open = false;
@@ -197,14 +203,19 @@ export class Menu {
       });
     } else {
       const list = this.optionItems();
-      hotspots.rows(200, 172, 460, 48, list.length, (i) => { this.index = i; input.tap("confirm"); });
+      // Seven rows now. 44px apart keeps the last one ("Return to the title")
+      // clear of the hint lines below; the smoke test reads optGeom to check
+      // that, so this stays honest if another option is ever added.
+      const Y0 = 180, STEP = 44, HINT_Y = 478;
+      this.optGeom = { y0: Y0, step: STEP, hintY: HINT_Y, rows: list.length };
+      hotspots.rows(200, Y0 - 6, 460, STEP, list.length, (i) => { this.index = i; input.tap("confirm"); });
       list.forEach((o, i) => {
         const sel = i === this.index;
-        if (sel) drawText(ctx, "☞", 200, 180 + i * 50, { size: 20, color: "#b8452e" });
-        drawText(ctx, o.label, 235, 180 + i * 50, { size: 20, bold: sel });
+        if (sel) drawText(ctx, "☞", 200, Y0 + i * STEP, { size: 20, color: "#b8452e" });
+        drawText(ctx, o.label, 235, Y0 + i * STEP, { size: 20, bold: sel });
       });
-      drawText(ctx, "Save anywhere here. Warm lamps save AND fully heal the party.", 200, 470, { size: 17, color: "#8a7a68" });
-      drawText(ctx, "Export downloads a backup file; Import loads one back in.", 200, 496, { size: 17, color: "#8a7a68" });
+      drawText(ctx, "Save anywhere here. Warm lamps save AND fully heal the party.", 200, HINT_Y, { size: 17, color: "#8a7a68" });
+      drawText(ctx, "Export downloads a backup file; Import loads one back in.", 200, HINT_Y + 24, { size: 17, color: "#8a7a68" });
       if (this.noticeT > 0) {
         const a = Math.min(1, this.noticeT);
         ctx.save();

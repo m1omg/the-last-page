@@ -1,3 +1,14 @@
+/* Patrick Hand by Patrick Wagesreiter, SIL Open Font License 1.1.
+   Bundled (not a CDN) so the game stays a self-contained static site, and so
+   phones stop falling back to whatever `cursive` means to them. */
+@font-face {
+  font-family: "Patrick Hand";
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("assets/fonts/PatrickHand-Regular.woff2") format("woff2");
+}
+
 html, body {
   margin: 0;
   padding: 0;

@@ -31,6 +31,17 @@ loads assets with `fetch`, which needs http.
 - **Sound on/off** — M, or **Sound** on the title screen / **Options → Sound**
   (remembered between sessions)
 
+### Text
+
+**Text** on the title screen / **Options → Text** switches the lettering:
+
+- **Clear** — the bundled *Patrick Hand* face and slightly larger dialogue.
+  Turned on automatically on touch devices, where it's much easier to read.
+- **Storybook** — the original chunkier handwriting.
+
+It starts on *auto* (Clear on phones and tablets, Storybook on desktop) and,
+like every other setting, is remembered between sessions.
+
 ### Touch (phones & tablets)
 
 Two schemes, toggled with **Touch** on the title screen or **Options → Touch
@@ -84,6 +95,9 @@ doodle-battles, no self-harm. It aims for a soft landing.
   kalimba, soft square leads; original melodies around one recurring
   friendship theme
 - **Engine** — vanilla JS + Canvas 2D, no build step, no runtime dependencies
+- **Font** — [Patrick Hand](https://fonts.google.com/specimen/Patrick+Hand) by
+  Patrick Wagesreiter, under the SIL Open Font License 1.1
+  (`assets/fonts/OFL.txt`). Bundled, not fetched from a CDN.
 
 ## Dev / tests
 

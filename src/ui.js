@@ -1,5 +1,37 @@
 // ui.js — shared drawing helpers: wobbly hand-drawn boxes, text, bars.
-export const FONT = '"Comic Sans MS", "Chalkboard SE", "Segoe Print", "Patrick Hand", cursive, sans-serif';
+//
+// Two font stacks. "Storybook" is the desktop look; "Clear" leads with Patrick
+// Hand, which we bundle (assets/fonts, OFL) — Android has none of the others and
+// used to fall through to bare `cursive`, a thin script that is near-illegible on
+// a phone. Symbol glyphs (☞ ▼ ◆ ← →) aren't in Patrick Hand; canvas falls back
+// per-glyph, which is why sans-serif stays pinned to the end of both stacks.
+const STACK_STORY = '"Comic Sans MS", "Chalkboard SE", "Segoe Print", "Patrick Hand", cursive, sans-serif';
+const STACK_CLEAR = '"Patrick Hand", "Comic Sans MS", "Chalkboard SE", "Segoe Print", cursive, sans-serif';
+
+// `let` + a setter, not `const`: ES module live bindings mean every `${FONT}`
+// call site picks the new value up with no plumbing.
+export let FONT = STACK_STORY;
+export let TEXT_SCALE = 1;
+
+export function setMobileMode(on) {
+  FONT = on ? STACK_CLEAR : STACK_STORY;
+  TEXT_SCALE = on ? 1.1 : 1; // ~10% larger — dialogue and CG captions only
+}
+
+// Canvas silently falls back when a webfont hasn't loaded yet, so the first
+// frame must wait for it. Never let a missing FontFace API block the boot.
+export async function loadFonts() {
+  try {
+    if (!document.fonts) return;
+    await Promise.race([
+      Promise.all([
+        document.fonts.load('22px "Patrick Hand"'),
+        document.fonts.load('bold 22px "Patrick Hand"'),
+      ]).then(() => document.fonts.ready),
+      new Promise((r) => setTimeout(r, 2500)),
+    ]);
+  } catch (_) { /* ship it with whatever the device has */ }
+}
 
 // deterministic wobble so boxes don't shimmer every frame
 function wob(seed, i, amp) {

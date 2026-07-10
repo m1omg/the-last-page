@@ -10,7 +10,16 @@ const SETTINGS_KEY = "the-last-page-settings";
 // again — a total lockout. Any stored "off" self-heals to "gestures" below.
 export const TOUCH_SCHEMES = ["gestures", "dpad"];
 
-const DEFAULTS = { touch: "gestures", muted: false };
+// "auto" resolves to on for touch devices, off for desktop — see resolveMobile.
+export const MOBILE_MODES = ["auto", "on", "off"];
+
+const DEFAULTS = { touch: "gestures", muted: false, mobile: "auto" };
+
+export function resolveMobile(s, touchCapable) {
+  if (s.mobile === "on") return true;
+  if (s.mobile === "off") return false;
+  return !!touchCapable;
+}
 
 export function loadSettings() {
   try {
@@ -21,6 +30,7 @@ export function loadSettings() {
     return {
       touch: TOUCH_SCHEMES.includes(s.touch) ? s.touch : DEFAULTS.touch,
       muted: typeof s.muted === "boolean" ? s.muted : DEFAULTS.muted,
+      mobile: MOBILE_MODES.includes(s.mobile) ? s.mobile : DEFAULTS.mobile,
     };
   } catch (e) {
     return { ...DEFAULTS };

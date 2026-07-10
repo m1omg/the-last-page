@@ -30,7 +30,10 @@ export const MAPS = {
     entities: [
       // picture hangs on the wall above the bed's head; listed BEFORE bed so
       // facing (4,4) from the floor tile (5,4) examines it instead of the bed.
-      { id: "picture", x: 1, y: 0, w: 4, h: 5, interact: "s_picture" },
+      // w:5 reaches column 5 on purpose: (5,4) is the ONLY walkable tile beside
+      // the picture, and entityAt() checks the tile you stand on before the one
+      // you face — so Z there gives the picture whichever way Mira is turned.
+      { id: "picture", x: 1, y: 0, w: 5, h: 5, interact: "s_picture" },
       { id: "bed", x: 0, y: 4, w: 5, h: 9, interact: "s_bed" },
       { id: "window", x: 5, y: 0, w: 6, h: 4, interact: "s_window" },
       { id: "desk", x: 11, y: 1, w: 7, h: 4, interact: "s_desk" },
@@ -60,7 +63,9 @@ export const MAPS = {
     ],
     entities: [
       { id: "bedroomdoor", x: 12, y: 1, w: 2, h: 1, touch: "s_hall_to_bedroom" },
-      { id: "momdoor", x: 4, y: 0, w: 2, h: 1, interact: "s_mom_door" },
+      // the door art fills the whole alcove (rows 0-2), as bedroomdoor's does,
+      // so Z anywhere inside the alcove listens at Mom's door
+      { id: "momdoor", x: 4, y: 0, w: 2, h: 3, interact: "s_mom_door" },
       { id: "leftpic", x: 0, y: 0, w: 4, h: 3, interact: "s_hall_leftpic" },
       { id: "photos", x: 7, y: 0, w: 3, h: 3, interact: "s_photos" },
       { id: "halfwall", x: 14, y: 7, w: 2, h: 2, interact: "s_halfwall_pic" },
@@ -146,9 +151,13 @@ export const MAPS = {
     entities: [
       { id: "lamp", x: 8, y: 6, w: 1, h: 2, interact: "s_lantern_save" },
       { id: "cushion", x: 10, y: 6, w: 2, h: 2, interact: "s_cushion" },
-      { id: "door_meadow", x: 0, y: 6, w: 1, h: 3, touch: "s_to_meadow" },
+      // The side doors are painted two tiles wide, so their touch zones are too:
+      // stepping into the doorway itself must go through, not the far column.
+      // The top/bottom doors are NOT widened — rows 2 and 12 are open corridors
+      // players walk along, and they'd get yanked through the door in passing.
+      { id: "door_meadow", x: 0, y: 6, w: 2, h: 3, touch: "s_to_meadow" },
       { id: "door_woods", x: 8, y: 1, w: 4, h: 1, touch: "s_to_woods" },
-      { id: "door_bay", x: 19, y: 6, w: 1, h: 3, touch: "s_to_bay" },
+      { id: "door_bay", x: 18, y: 6, w: 2, h: 3, touch: "s_to_bay" },
       { id: "door_smudge", x: 8, y: 13, w: 4, h: 1, touch: "s_to_depths" },
       { id: "crayons", x: 3, y: 2, w: 2, h: 2, interact: "s_crayons" },
     ],

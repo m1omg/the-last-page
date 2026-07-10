@@ -80,7 +80,9 @@ def bake_bg(key):
         return
     img = Image.open(src).convert("RGB")
     img = crop_43(img).resize((960, 720), Image.LANCZOS)
-    img.save(OUT / f"{key}.jpg", "JPEG", quality=86, optimize=True, subsampling=1)
+    # subsampling=0 (4:4:4) matters more than the quality number here: the art is
+    # dark, smooth coloured-pencil wash, and 4:2:2 chroma blotches it visibly.
+    img.save(OUT / f"{key}.jpg", "JPEG", quality=90, optimize=True, subsampling=0)
     print(f"bg   {key}")
 
 
@@ -94,7 +96,7 @@ def bake_portrait(key):
     x = (img.width - s) // 2
     y = (img.height - s) // 2
     img = img.crop((x, y, x + s, y + s)).resize((256, 256), Image.LANCZOS)
-    img.save(OUT / f"{key}.jpg", "JPEG", quality=88, optimize=True, subsampling=1)
+    img.save(OUT / f"{key}.jpg", "JPEG", quality=90, optimize=True, subsampling=0)
     print(f"pt   {key}")
 
 
