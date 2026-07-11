@@ -279,6 +279,19 @@ async function tapLogical(page, cdp, lx, ly) {
   await page.waitForTimeout(350);
 }
 
+// logical canvas coords -> CSS px, for real mouse events
+async function toCss(page, lx, ly) {
+  return page.evaluate(([lx, ly]) => {
+    const r = document.getElementById("game").getBoundingClientRect();
+    return { x: r.left + lx * (r.width / 960), y: r.top + ly * (r.height / 720) };
+  }, [lx, ly]);
+}
+async function clickLogical(page, lx, ly, button = "left") {
+  const p = await toCss(page, lx, ly);
+  await page.mouse.click(p.x, p.y, { button });
+  await page.waitForTimeout(350);
+}
+
 for (const schemeUnderTest of ["gestures", "dpad"]) {
   const ctx = await browser.newContext({ hasTouch: true, viewport: { width: 900, height: 700 } });
   const page = await newPage(ctx, { settings: JSON.stringify({ touch: schemeUnderTest }) });
@@ -457,6 +470,71 @@ for (const schemeUnderTest of ["gestures", "dpad"]) {
   await page.reload();
   await page.waitForFunction("window.__ready === true", null, { timeout: 20000 });
   ok("survives a reload", (await page.evaluate("window.__game.textmode.mode")) === "off");
+  ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
+  await ctx.close();
+}
+
+// ---------------------------------------------------------------- mouse
+{
+  const ctx = await browser.newContext({ viewport: { width: 1000, height: 760 } }); // desktop, no touch
+  const page = await newPage(ctx);
+  await page.waitForTimeout(600);
+  console.log("\n[mouse]");
+
+  // cursor affordance on the title: pointer over a row, default off it
+  const row = (i) => 464 + i * 38 + 8;
+  let p = await toCss(page, 500, row(3));
+  await page.mouse.move(p.x, p.y);
+  await page.waitForTimeout(150);
+  ok("pointer cursor over a title row",
+     (await page.evaluate(`document.getElementById("game").style.cursor`)) === "pointer");
+  p = await toCss(page, 100, 100);
+  await page.mouse.move(p.x, p.y);
+  await page.waitForTimeout(150);
+  ok("default cursor off the rows",
+     (await page.evaluate(`document.getElementById("game").style.cursor`)) === "");
+
+  // clicking a title row activates it directly (Sound toggles, stays on title)
+  const mutedBefore = await page.evaluate("window.__game.audio.isMuted()");
+  await clickLogical(page, 500, row(3)); // Sound row
+  ok("clicking 'Sound:' toggles it", (await page.evaluate("window.__game.audio.isMuted()")) !== mutedBefore);
+  ok("still on the title", (await page.evaluate("window.__game.game.mode")) === "title");
+  await clickLogical(page, 500, row(3)); // toggle back
+
+  // clicking Continue starts the game
+  await clickLogical(page, 500, row(0));
+  await page.waitForTimeout(2000);
+  ok("clicking 'Continue' loads the save", (await page.evaluate("window.__game.game.mode")) === "map");
+
+  // right-click = X: opens the pocket menu, closes it again
+  p = await toCss(page, 480, 300);
+  await page.mouse.click(p.x, p.y, { button: "right" });
+  await page.waitForTimeout(350);
+  ok("right-click opens the menu", await page.evaluate("window.__game.game.menu.open"));
+  await page.mouse.click(p.x, p.y, { button: "right" });
+  await page.waitForTimeout(350);
+  ok("right-click again closes it", !(await page.evaluate("window.__game.game.menu.open")));
+
+  // click a menu tab, then a row, then outside to close
+  await page.mouse.click(p.x, p.y, { button: "right" });
+  await page.waitForTimeout(350);
+  await clickLogical(page, 560, 100); // Options tab
+  ok("clicking the Options tab switches to it", (await page.evaluate("window.__game.game.menu.tab")) === 2);
+  await clickLogical(page, 430, 188); // Save game row
+  ok("clicking 'Save game' runs it", (await page.evaluate(`window.__game.game.menu.notice`)).includes("saved"));
+  await clickLogical(page, 30, 360); // dimmed area outside the panel
+  ok("clicking outside the panel closes the menu", !(await page.evaluate("window.__game.game.menu.open")));
+
+  // click with nothing tappable = confirm: examine the cushion, then click through the dialogue
+  await page.evaluate(`window.__game.tp("blank_page", 10, 8); window.__game.game.state.facing = "up";`);
+  await page.waitForTimeout(300);
+  await clickLogical(page, 480, 620); // empty spot -> plain confirm -> interact
+  ok("click acts as Z (dialogue opened)", await page.evaluate("window.__game.game.dialogue.active"));
+  for (let i = 0; i < 4 && (await page.evaluate("window.__game.game.dialogue.active")); i++) {
+    await clickLogical(page, 480, 620);
+  }
+  ok("clicks advance and close the dialogue", !(await page.evaluate("window.__game.game.dialogue.active")));
+
   ok("no console errors", page.__errs.length === 0, page.__errs[0] || "");
   await ctx.close();
 }

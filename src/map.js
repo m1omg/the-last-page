@@ -256,6 +256,20 @@ export class MapScene {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         ctx.fillText("🏮", cx, cy);
+      } else if (e.sprite === "book") {
+        // the battle guide in the hub — soft paper-white glow so it reads as
+        // "you can read me" against the busy crayon art, like the lantern does
+        const t = performance.now() / 800;
+        const r = 24 + Math.sin(t) * 3;
+        const grad = ctx.createRadialGradient(cx, cy, 3, cx, cy, r);
+        grad.addColorStop(0, "rgba(255,250,230,0.75)");
+        grad.addColorStop(1, "rgba(255,250,230,0)");
+        ctx.fillStyle = grad;
+        ctx.fillRect(cx - r, cy - r, r * 2, r * 2);
+        ctx.font = "26px sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText("📖", cx, cy + Math.sin(t * 1.4) * 2);
       } else if (e.sprite.startsWith("enemy:")) {
         const img = assets.img(e.sprite.slice(6));
         const bob = Math.sin(performance.now() / 350 + e.x) * 3;

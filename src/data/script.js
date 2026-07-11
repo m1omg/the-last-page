@@ -45,7 +45,7 @@ export const SCRIPTS = {
         { label: "Not yet", then: [] },
       ] },
     ], else: [
-      n("You crawl under the covers and squeeze your eyes shut.\nYou know the trick by now. You breathe in... and count backwards from the accident."),
+      n("You crawl under the covers and squeeze your eyes shut.\nYou know the trick by now. Count backwards from one hundred, slow,\nand be asleep before the counting reaches that day."),
       { t: "flag", key: "intro_done", value: true },
       { t: "sfx", name: "sfx_page" },
       { t: "fade", ms: 1500 },
@@ -188,6 +188,27 @@ export const SCRIPTS = {
   ],
   s_cushion: [ n("The cushion has one job and it does it magnificently.") ],
   s_crayons: [ n("Someone's crayons, dropped mid-drawing. The sun-yellow one is missing.") ],
+  // The battle guide book — readable any time, pages picked from a menu so
+  // players can re-check one rule without re-reading the whole thing.
+  s_guide: [
+    n("A little book lies open on the paper floor: 'HOW TO TALK TO SAD DOODLES.'\nHalf the letters are yours. The other half are Ren's. You wrote it together,\nback when the worst monster in here was bedtime."),
+    { t: "choice", options: [
+      { label: "Feelings beat feelings", then: [
+        n("Page one. Three crayon faces chase each other in a circle:\nGIGGLY beats GRUMPY beats GLOOMY beats GIGGLY.\nHit a doodle with the feeling that beats its feeling and it lands HARDER."),
+        n("Under that, in Ren's handwriting:\n'GIGGLY friends dodge sometimes. GRUMPY ones hit harder but get hit harder.\nGLOOMY ones curl up small - they take less, and ink comes back a drop a turn.'"),
+      ] },
+      { label: "How to reach out", then: [
+        n("Page two. A doodle with a scribbled-out head, and the same doodle again,\nlistening. Under it: 'A doodle deep in a bad feeling CAN'T HEAR YOU.\nReach out once to break the storm - or change its mood with a skill - THEN talk.'"),
+        n("'One heart a turn. That's as fast as anyone's heart un-hurts.\nSay something NEW each time - nobody wants the same comfort twice in a row.\nAnd if you say the WRONG thing... the storm comes back. Be brave. Be kind.'"),
+        n("At the bottom, small, in your handwriting:\n'Hearts also make them swing softer. Kindness is armor. - M.'"),
+      ] },
+      { label: "Staying un-torn", then: [
+        n("Page three. A stick figure hiding behind a giant cookie. 'STEADY halves what\nhits you and breathes 2 ink back. Snacks work on friends, not on you-know-what.\nWisp's warm glow mends. Sir Biscuit's wall covers EVERYBODY.'"),
+        n("'Warm lanterns save the story and mend the whole party.\nBig sad things get a SECOND WIND when they're half done - don't panic.\nThat's when they most need you to keep going.'"),
+      ] },
+      { label: "Put it down", then: [] },
+    ] },
+  ],
   s_to_meadow: [
     { t: "fade", ms: 600 }, { t: "sfx", name: "sfx_door" },
     { t: "tp", map: "meadow_1", x: 9, y: 12, facing: "up" }, { t: "unfade", ms: 600 },

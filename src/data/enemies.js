@@ -1,13 +1,16 @@
 // enemies.js — enemy definitions, Reach Out tables, and troops.
 //
 // Every regular enemy is a sad little doodle warped by the Smudge; each can be
-// resolved peacefully via Reach Out. calmNeed = good options required.
+// resolved peacefully via Reach Out. calmNeed = hearts to fill; hearts land at
+// most one per round, only while the doodle is listening (emotion shifted away
+// from its distressed default — see battle.js doReach for the storm gate).
 // reach option: { label, good, text } — text is what happens.
+// Bosses: rallyText announces the second wind below half HP.
 
 export const ENEMIES = {
   sniffle: {
     name: "Sniffle", img: "en_sniffle",
-    hp: 30, atk: 9, def: 3, spd: 6, emotion: "gloomy",
+    hp: 34, atk: 10, def: 3, spd: 6, emotion: "gloomy",
     intro: "Sniffle drips quietly. It looks like it's been crying for days.",
     acts: [
       { kind: "attack", mult: 1.0, msg: "{e} sneezes a storm of soggy confetti!" },
@@ -25,7 +28,7 @@ export const ENEMIES = {
   },
   scribble: {
     name: "Scribbles", img: "en_scribble",
-    hp: 38, atk: 12, def: 4, spd: 12, emotion: "grumpy",
+    hp: 46, atk: 13, def: 4, spd: 12, emotion: "grumpy",
     intro: "Scribbles bristles like static. Something in its tangle hurts.",
     acts: [
       { kind: "attack", mult: 1.1, msg: "{e} ricochets off your head!" },
@@ -43,14 +46,14 @@ export const ENEMIES = {
   },
   thornbud: {
     name: "Thornbud", img: "en_thornbud",
-    hp: 44, atk: 13, def: 8, spd: 4, emotion: "grumpy",
+    hp: 64, atk: 15, def: 8, spd: 4, emotion: "grumpy",
     intro: "Thornbud refuses to bloom. It glares at you, arms crossed.",
     acts: [
       { kind: "attack", mult: 1.2, msg: "{e} flings a fistful of thorns!" },
       { kind: "defend", msg: "{e} curls its petals tighter." },
       { kind: "emotion", target: "player", emotion: "grumpy", msg: "{e} grumbles something so rude you can't help getting mad." },
     ],
-    calmNeed: 2,
+    calmNeed: 3,
     reach: [
       { label: "Compliment its thorns", good: true, text: "\"Those are excellent thorns,\" you say. Thornbud pretends not to care. Its petals loosen slightly." },
       { label: "Water it", good: true, text: "You share your juice box. Thornbud drinks angrily. Then less angrily." },
@@ -61,14 +64,14 @@ export const ENEMIES = {
   },
   buttoncrab: {
     name: "Clasp", img: "en_buttoncrab",
-    hp: 40, atk: 12, def: 9, spd: 7, emotion: "gloomy",
+    hp: 70, atk: 16, def: 10, spd: 7, emotion: "gloomy",
     intro: "Clasp scuttles sideways, trailing loose threads. It's coming unsewn.",
     acts: [
       { kind: "attack", mult: 1.0, msg: "{e} pinches with a safety-pin claw!" },
       { kind: "defend", msg: "{e} hides under its button." },
       { kind: "attack", mult: 1.3, msg: "{e} panics and does a spinning pinch attack!" },
     ],
-    calmNeed: 2,
+    calmNeed: 3,
     reach: [
       { label: "Sew the loose thread", good: true, text: "You tuck the loose thread back through a buttonhole. Clasp sighs with its whole shell." },
       { label: "Wave hello", good: true, text: "You wave. Clasp waves back with both claws, then gets embarrassed." },
@@ -79,7 +82,7 @@ export const ENEMIES = {
   },
   inklet: {
     name: "Inklet", img: "en_inklet",
-    hp: 34, atk: 11, def: 4, spd: 8, emotion: "gloomy",
+    hp: 60, atk: 15, def: 4, spd: 8, emotion: "gloomy",
     intro: "A little blob of the Smudge... but it's reaching up at you. It just wants to be held.",
     acts: [
       { kind: "attack", mult: 1.0, msg: "{e} splashes cold ink on you!" },
@@ -99,7 +102,7 @@ export const ENEMIES = {
   // ------------------------------------------------------------- bosses
   tangle: {
     name: "TANGLE", img: "boss_tangle", boss: true,
-    hp: 105, atk: 15, def: 6, spd: 9, emotion: "grumpy",
+    hp: 125, atk: 15, def: 6, spd: 9, emotion: "grumpy",
     intro: "TANGLE roars like a scribbled-out sentence. Every angry word ever left unsaid, wadded into one.",
     acts: [
       { kind: "attack", mult: 1.2, msg: "{e} lashes out with a whip of jagged lines!" },
@@ -107,19 +110,20 @@ export const ENEMIES = {
       { kind: "emotion", target: "player", emotion: "grumpy", msg: "{e} shrieks words that aren't words. Your ears burn. Your fists clench." },
       { kind: "emotion", target: "self", emotion: "grumpy", msg: "{e} winds itself tighter and TIGHTER." },
     ],
-    calmNeed: 3,
+    calmNeed: 5,
     reach: [
       { label: "\"I'm listening.\"", good: true, text: "The scribbles slow. Somewhere inside, something is trying to talk." },
       { label: "Find the loose end", good: true, text: "You spot one trembling line sticking out, and hold it steady." },
       { label: "Breathe with it", good: true, text: "You breathe in... and out. Slow. The scribbles start to match your rhythm without meaning to." },
       { label: "Yell back", good: false, text: "You yell. It yells LOUDER. This is going nowhere." },
     ],
+    rallyText: "TANGLE knots itself into one furious fist. It is not done being heard.",
     peaceText: "The scribbles loosen, breathe out, and settle into a page of neat, calm handwriting. It almost looks like an apology.",
     winText: "TANGLE frays apart into drifting pencil shavings. The angry words are quiet now, one way or another.",
   },
   swan: {
     name: "THE PAPER SWAN", img: "boss_swan", boss: true,
-    hp: 125, atk: 17, def: 9, spd: 7, emotion: "gloomy",
+    hp: 155, atk: 18, def: 6, spd: 7, emotion: "gloomy",
     intro: "The Paper Swan bows its creased neck. It guards its crumpled wing the way you guard a memory that hurts.",
     acts: [
       { kind: "attack", mult: 1.1, msg: "{e} slices the air with a razor-fold wing!" },
@@ -127,19 +131,20 @@ export const ENEMIES = {
       { kind: "attack", mult: 1.4, msg: "{e} dives in a rush of torn feathers!" },
       { kind: "defend", msg: "{e} folds itself smaller, hiding the crumpled wing." },
     ],
-    calmNeed: 3,
+    calmNeed: 6,
     reach: [
       { label: "Smooth a crease", good: true, text: "You smooth one crease with your thumb. The Swan shivers but lets you." },
       { label: "\"It still flies?\"", good: true, text: "You ask about the crumpled wing. The Swan lifts it, trembling. It does. Differently, but it does." },
       { label: "Sing to her", good: true, text: "You sing the fireflies' little tune, off-key. The Swan's folded neck lifts, remembering the words." },
       { label: "Look away", good: false, text: "You can't look at the broken part. The Swan folds it out of sight. Nothing gets better." },
     ],
+    rallyText: "The Swan spreads BOTH wings - even the crumpled one - and the air goes sharp with paper edges.",
     peaceText: "The Swan unfolds - all the way, fearlessly - and refolds itself around its dents. It flies. Crooked and beautiful.",
     winText: "The Swan comes apart into clean white sheets that drift down like snow. On one of them, a child has drawn two kids on swings.",
   },
   keeper: {
     name: "THE BELL KEEPER", img: "boss_keeper", boss: true,
-    hp: 150, atk: 18, def: 10, spd: 6, emotion: "neutral",
+    hp: 150, atk: 17, def: 6, spd: 6, emotion: "gloomy",
     intro: "The Bell Keeper holds up a small silver bell. When it rings, you flinch before you even know why.",
     acts: [
       { kind: "attack", mult: 1.2, msg: "{e} strikes with a stiff porcelain hand!" },
@@ -147,13 +152,14 @@ export const ENEMIES = {
       { kind: "attack", mult: 1.0, targets: "all", msg: "{e} sweeps its lantern beam across everyone!" },
       { kind: "emotion", target: "player", emotion: "gloomy", msg: "{e} looks at you with painted eyes full of sorry." },
     ],
-    calmNeed: 3,
+    calmNeed: 6,
     reach: [
       { label: "Listen to the bell", good: true, text: "You make yourself listen, all the way to the end of the ring. It's just a bell. It was always just a bell." },
       { label: "\"It wasn't the bell's fault.\"", good: true, text: "The Keeper's cracked face tilts. Its grip on the bell softens." },
       { label: "Hold its gloved hand", good: true, text: "You take the stiff porcelain hand. It's cold, then a little less cold. Nobody blames a hand for ringing a warning." },
       { label: "Cover your ears", good: false, text: "You cover your ears. The ringing gets louder INSIDE." },
     ],
+    rallyText: "The Bell Keeper's cracks glow faintly. It raises the little bell with both hands now.",
     peaceText: "The Bell Keeper kneels and offers you the bell. It's tiny in your hand. It rings once, clear and harmless, like a bicycle passing safely by.",
     winText: "The Keeper bows, cracks spreading, and comes apart into white sand. The little bell lands softly on top. It doesn't ring.",
   },

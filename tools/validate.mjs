@@ -48,7 +48,7 @@ for (const [name, d] of Object.entries(MAPS)) {
       for (let y = e.y; y < e.y + (e.h || 1); y++) for (let x = e.x; x < e.x + (e.w || 1); x++) if (walk(x, y)) any = true;
       if (!any) err(`${name}/${e.id}: touch zone entirely solid`);
     }
-    if (e.sprite && e.sprite !== "sparkle" && e.sprite !== "lantern" && !e.sprite.startsWith("enemy:") && !e.sprite.startsWith("sp_"))
+    if (e.sprite && e.sprite !== "sparkle" && e.sprite !== "lantern" && e.sprite !== "book" && !e.sprite.startsWith("enemy:") && !e.sprite.startsWith("sp_"))
       warn(`${name}/${e.id}: odd sprite ${e.sprite}`);
     if (e.sprite && !walkOrSolid(d, e)) err(`${name}/${e.id}: sprite tile solid (unreachable/invisible blocker ok?)`);
   }
@@ -116,8 +116,15 @@ for (const [t, list] of Object.entries(TROOPS)) for (const id of list) if (!ENEM
 for (const [id, p] of Object.entries(PARTY_DEFS)) for (const s of p.skills) if (!SKILLS[s]) err(`party ${id}: missing skill ${s}`);
 for (const [id, e] of Object.entries(ENEMIES)) {
   if (!e.reach || !e.reach.length) err(`enemy ${id}: no reach options`);
-  if (e.calmNeed > e.reach.filter((r) => r.good).length && !e.reachStory)
-    err(`enemy ${id}: calmNeed ${e.calmNeed} > good options`);
+  const good = e.reach.filter((r) => r.good).length;
+  if (e.reachStory) {
+    // story enemies land steps in order, one per round; need enough beats
+    if (good < e.calmNeed) err(`enemy ${id}: story enemy has ${good} good steps < calmNeed ${e.calmNeed}`);
+  } else if (good < 2 && e.calmNeed >= 2) {
+    // options are reusable but can't land twice in a row (lastReach), so any
+    // calmNeed >= 2 requires at least two good options to rotate between
+    err(`enemy ${id}: calmNeed ${e.calmNeed} unreachable with ${good} good option(s) — rotation needs >= 2`);
+  }
 }
 
 // ---- assets on disk vs manifest

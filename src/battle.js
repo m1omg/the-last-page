@@ -32,7 +32,10 @@ export class BattleScene {
       return {
         id, i, name: d.name, img: d.img, def: d,
         hp: d.hp, maxHp: d.hp, atk: d.atk, defs: d.def, spd: d.spd,
-        emotion: d.emotion || "neutral", calm: 0, reachUsed: new Set(),
+        emotion: d.emotion || "neutral", calm: 0,
+        lastReach: null,   // the option that landed last — repeats fizzle
+        settled: false,    // one calm gain per round, reset each beginRound
+        rallied: false,    // boss second wind, triggered below half HP
         wobble: 0,
       };
     });
@@ -48,12 +51,14 @@ export class BattleScene {
     this.shakeT = 0;
     this.result = null;
     this.storyReachStep = 0;
+    this.rounds = 0; // read by the smoke tests to guard against re-trivializing
 
     audio.playBgm(cfg.boss ? "bgm_boss" : "bgm_battle", { fade: 0.4 });
     const intro = this.enemies.map((e) => e.def.intro).join("\n");
     this.queueMsg(intro);
     if (cfg.tutorial) {
-      this.queueMsg("(Battle basics: FIGHT deals damage. REACH OUT is how you talk to sad doodles - calm one down completely and the fight ends peacefully. Emotions beat each other in a circle: GIGGLY beats GRUMPY beats GLOOMY beats GIGGLY.)");
+      this.queueMsg("(Battle basics: FIGHT deals damage. REACH OUT is how you talk to sad doodles - fill their hearts and the fight ends peacefully. Emotions beat each other in a circle: GIGGLY beats GRUMPY beats GLOOMY beats GIGGLY.)");
+      this.queueMsg("(A doodle deep in a bad feeling CAN'T HEAR YOU. Reach out once to break the storm - or shift its mood with a skill - and THEN your words land. There's a little book about this back in the Blank Page.)");
     }
   }
 
@@ -188,7 +193,9 @@ export class BattleScene {
         opts = opts.slice(0, this.storyReachStep + 1).slice(-1); // one unlocked step at a time
         if (!opts.length) opts = [{ label: "...", good: false, text: "You reach out, but you don't have the words yet." }];
       }
-      return opts.map((o) => ({ ref: o, label: o.label, disabled: e.reachUsed.has(o.label) && !e.def.reachStory }));
+      // the option that just landed is greyed out — it needs to hear something
+      // new (two members can still race the same option; resolution fizzles it)
+      return opts.map((o) => ({ ref: o, label: o.label, disabled: !e.def.reachStory && o.good && o.label === e.lastReach }));
     }
     if (menu.kind === "item") {
       const inv = this.game.state.inventory;
@@ -208,9 +215,19 @@ export class BattleScene {
   }
 
   beginRound() {
+    this.rounds++;
     // build full turn queue: party acts + enemy acts, by speed
     const acts = [...this.pendingActs];
-    for (const e of this.aliveEnemies()) acts.push({ kind: "enemyact", actor: e });
+    for (const e of this.aliveEnemies()) {
+      e.settled = false; // a heart can land again this round
+      // second wind: a boss below half HP fights twice per round, announced once
+      if (e.def.boss && !e.def.immune && !e.rallied && e.hp <= e.maxHp / 2) {
+        e.rallied = true;
+        this.queueMsg(e.def.rallyText || `${e.name} steadies itself. It is not done yet.`);
+      }
+      acts.push({ kind: "enemyact", actor: e });
+      if (e.rallied) acts.push({ kind: "enemyact", actor: e });
+    }
     acts.sort((a, b) => (b.actor.spd || 0) - (a.actor.spd || 0));
     this.turnQ = acts;
     this.wall = false;
@@ -342,22 +359,53 @@ export class BattleScene {
     this.queueMsg(`${a.name} shares a ${item.name} with ${t.name}. Small comforts count double in here.`);
   }
 
+  // Reach Out rules:
+  //  - an enemy sitting in its distressed default emotion can't hear you: the
+  //    first good option breaks the storm (emotion -> neutral) but gives no calm
+  //  - a listening enemy (any emotion but its default) takes +1 calm...
+  //  - ...at most once per round (settled), and never from the same option
+  //    twice in a row (lastReach)
+  //  - a bad option costs a heart and brings the storm back
   doReach(a, act) {
     const e = act.target;
     if (!e || e.hp <= 0 || e.soothed) return;
     const o = act.option;
     audio.sfx(o.good ? "sfx_soothe" : "sfx_cancel");
     this.queueMsg(`${a.name} reaches out: ${o.label}\n${o.text}`);
+
     if (e.def.reachStory) {
-      if (o.good) { e.calm++; this.storyReachStep++; }
-    } else if (o.good && !e.reachUsed.has(o.label)) {
-      e.reachUsed.add(o.label);
-      e.calm++;
+      // the final boss: story beats land one per round, in order
+      if (o.good) {
+        if (e.settled) { this.queueMsg("The ink is still holding those words. Give them a moment to sink."); return; }
+        e.calm++;
+        e.settled = true;
+        this.storyReachStep++;
+        this.addFloater(e, "♥", "#e88aa0");
+      }
     } else if (!o.good) {
+      const had = e.calm;
       e.calm = Math.max(0, e.calm - 1);
-      e.emotion = e.def.emotion;
+      e.emotion = e.def.emotion; // the storm comes back
+      e.lastReach = null;
+      if (had > 0) this.addFloater(e, "-♥", "#8a6a7a");
+      this.queueMsg(`${e.name} shrinks back into the bad feeling...${had > 0 ? " A heart flickers out." : ""}`);
+    } else if (o.label === e.lastReach) {
+      this.queueMsg(`${e.name} nods along... but it just heard that one. It needs something NEW.`);
+    } else if (e.emotion === e.def.emotion) {
+      // the storm gate: this reach breaks through, but the words don't land yet
+      e.emotion = "neutral";
+      e.lastReach = o.label;
+      this.addFloater(e, "listening...", "#e8d8a0");
+      this.queueMsg(`${e.name} goes quiet mid-feeling. It's LISTENING now.`);
+    } else if (e.settled) {
+      this.queueMsg(`${e.name} is still holding your words. Let them settle.`);
+    } else {
+      e.calm++;
+      e.settled = true;
+      e.lastReach = o.label;
+      this.addFloater(e, "♥", "#e88aa0");
     }
-    if (o.good) this.addFloater(e, "♥", "#e88aa0");
+
     if (e.calm >= e.def.calmNeed) {
       e.soothed = true;
       audio.sfx("sfx_soothe");
@@ -370,12 +418,14 @@ export class BattleScene {
     const act = acts[Math.floor(Math.random() * acts.length)];
     const targets = this.aliveParty();
     if (!targets.length) return;
+    // every heart softens the swings — kindness is armor, even mid-fight
+    const soften = Math.max(0.6, 1 - 0.06 * e.calm);
     const msg = (act.msg || "").replace("{e}", e.name);
     if (act.kind === "attack") {
       const list = act.targets === "all" ? targets : [targets[Math.floor(Math.random() * targets.length)]];
       let text = msg;
       for (const t of list) {
-        let raw = e.atk * (act.mult || 1);
+        let raw = e.atk * (act.mult || 1) * soften;
         if (e.emotion === "grumpy") raw *= 1.2;
         raw *= advMult(e.emotion, t.emotion);
         raw -= t.def * 0.55;
@@ -407,7 +457,7 @@ export class BattleScene {
       let text = msg;
       for (const t of targets) {
         t.emotion = "gloomy";
-        const dmg = 5 + Math.floor(Math.random() * 4);
+        const dmg = Math.max(1, Math.round((5 + Math.floor(Math.random() * 4)) * soften));
         t.hp = Math.max(0, t.hp - dmg);
         this.addFloater(t, `-${dmg}`, "#5a7fc4");
         text += `\n${t.name} takes ${dmg} and turns GLOOMY.`;
@@ -539,7 +589,12 @@ export class BattleScene {
       ctx.restore();
       if (e.hp > 0) {
         drawBar(ctx, cx - 70, cy + size / 2 + 8, 140, 14, e.hp / e.maxHp, "#c25a4a");
-        emotionTag(ctx, cx, cy + size / 2 + 26, e.emotion);
+        if (e.emotion === "neutral" && !e.def.reachStory && e.def.calmNeed) {
+          // the storm is broken — show that it can hear you now
+          drawText(ctx, "( listening )", cx, cy + size / 2 + 28, { size: 15, align: "center", color: "#f0e8d8" });
+        } else {
+          emotionTag(ctx, cx, cy + size / 2 + 26, e.emotion);
+        }
         if (e.calm > 0 && e.def.calmNeed) {
           drawText(ctx, "♥".repeat(e.calm) + "♡".repeat(Math.max(0, e.def.calmNeed - e.calm)),
             cx, cy - size / 2 - 26, { size: 20, align: "center", color: "#e88aa0" });

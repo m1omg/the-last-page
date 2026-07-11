@@ -42,6 +42,13 @@ loads assets with `fetch`, which needs http.
 It starts on *auto* (Clear on phones and tablets, Storybook on desktop) and,
 like every other setting, is remembered between sessions.
 
+### Mouse
+
+- **Click** a menu option to choose it directly; clicking with no menu open
+  confirms / advances dialogue, like Z.
+- **Right-click** is X — opens or closes the menu, backs out of submenus.
+  The whole game is playable with just the mouse.
+
 ### Touch (phones & tablets)
 
 Two schemes, toggled with **Touch** on the title screen or **Options → Touch
@@ -75,7 +82,9 @@ is also available on the title screen.
   Woods, Button Bay), a final descent, and **two endings**
 - Omori-style battles with an **emotion triangle** (GIGGLY > GRUMPY >
   GLOOMY > GIGGLY) and Undertale-style **Reach Out** — every enemy, including
-  every boss, can be resolved without violence
+  every boss, can be resolved without violence. A doodle deep in a bad feeling
+  can't hear you: break the storm (or shift its mood with a skill) and *then*
+  your words land, one heart a round. There's a guide book in the Blank Page.
 - 3 party members, skills, items, snacks, a boss that cannot be fought at all
 
 ## Content note

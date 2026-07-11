@@ -301,9 +301,9 @@ function drawTitle() {
   }
   ctx.font = `15px ${FONT}`;
   ctx.lineWidth = 4;
-  ctx.strokeText("Z / Enter — choose · arrows — move · M — sound", 480, 690);
+  ctx.strokeText("Z / Enter or click — choose · arrows — move · M — sound", 480, 690);
   ctx.fillStyle = "#e8d8ba";
-  ctx.fillText("Z / Enter — choose · arrows — move · M — sound", 480, 690);
+  ctx.fillText("Z / Enter or click — choose · arrows — move · M — sound", 480, 690);
   ctx.restore();
 }
 

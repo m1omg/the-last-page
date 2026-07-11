@@ -7,7 +7,7 @@
 // Tapping a menu row activates it directly in BOTH schemes (see hotspots.js) —
 // dragging is for walking, not for moving menu cursors.
 import { input } from "./input.js";
-import { hotspots } from "./hotspots.js";
+import { hotspots, NOOP } from "./hotspots.js";
 import { loadSettings, updateSettings, TOUCH_SCHEMES } from "./settings.js";
 
 const DEADZONE = 24;   // css px before a drag counts as a direction
@@ -251,6 +251,30 @@ export const touch = {
     stage.addEventListener("touchmove", onTouchMove, { passive: false });
     stage.addEventListener("touchend", onTouchEnd, { passive: false });
     stage.addEventListener("touchcancel", onTouchEnd, { passive: false });
+
+    // Mouse (and pen) support, always on — menus are clickable on desktop too.
+    // A click routes through the same hotspot plumbing as a tap: a menu row
+    // click selects and activates it; a click with nothing tappable showing is
+    // a plain confirm (advances dialogue, interacts). Touches never get here:
+    // they arrive via the touch events above, whose preventDefault() also
+    // suppresses the browser's synthetic mouse events.
+    stage.addEventListener("pointerdown", (e) => {
+      if (e.pointerType === "touch" || e.button !== 0) return;
+      handleTap(e.clientX, e.clientY);
+    });
+    // right-click = X (open/close the menu, back out of submenus)
+    stage.addEventListener("contextmenu", (e) => {
+      e.preventDefault();
+      input.tap("cancel");
+    });
+    // pointer cursor over anything actually clickable
+    stage.addEventListener("mousemove", (e) => {
+      const p = toLogical(e.clientX, e.clientY);
+      const fn = p ? hotspots.hitTest(p.x, p.y) : null;
+      const hot = fn && fn !== NOOP;
+      if (canvas) canvas.style.cursor = hot ? "pointer" : "";
+    });
+
     window.addEventListener("blur", () => { resetGesture(); setDir(null); });
     window.addEventListener("resize", layout);
     window.addEventListener("orientationchange", layout);

@@ -45,10 +45,12 @@ const fail = async (msg) => {
 
 async function waitIdle(timeout = 15000, { chooseIdx = 0 } = {}) {
   // drive through anything (dialogue, choices, battles, CGs) until idle on map
-  const t0 = Date.now();
+  let t0 = Date.now();
   while (Date.now() - t0 < timeout) {
     const m = await mode();
-    if (m === "battle") { await runBattlePeace(); continue; }
+    // battles run long now (bosses are 5-8 rounds by design) — don't let the
+    // fight time count against the idle timeout
+    if (m === "battle") { await runBattlePeace(); t0 = Date.now(); continue; }
     if (m === "cg") { await page.keyboard.press("KeyZ"); await page.waitForTimeout(120); continue; }
     const busy = await g("window.__game.busy()");
     if (!busy && m === "map") return;
@@ -106,28 +108,56 @@ async function goThrough(x, y, dir, expectedMap, tries = 4) {
 }
 const flag = (f) => g(`!!window.__game.game.state.flags[${JSON.stringify(f)}]`);
 
-async function runBattlePeace(timeout = 90000) {
-  // generic battle driver: prefer Reach Out good options; falls back to Fight
+// rounds of the most recently finished battle — asserted after boss fights so
+// a balance regression back to one-round pacifism fails the suite
+let lastBattleRounds = 0;
+
+async function runBattlePeace(timeout = 300000) {
+  // Generic battle driver playing like a sensible pacifist: heal whoever is
+  // hurt (Warm Glow, else a snack), otherwise Reach Out with a good option.
+  // The storm gate / settle / no-repeat rules need no special handling — the
+  // menu greys the just-used option and fizzles are harmless.
   const t0 = Date.now();
   while (Date.now() - t0 < timeout) {
     if ((await mode()) !== "battle") return;
     const st = await g(`(() => {
       const b = window.__game.game.battle;
       if (!b) return null;
-      return { msgs: b.msgQ.length, phase: b.phase, menu: b.menu.kind, idx: b.menu.index,
-               items: b.menuItems ? b.menuItems().map(o => ({label: o.label, disabled: !!o.disabled})) : [] };
+      const m = b.party[b.cmdIndex];
+      const inv = window.__game.game.state.inventory;
+      return { msgs: b.msgQ.length, phase: b.phase, menu: b.menu.kind, rounds: b.rounds,
+               items: b.menuItems ? b.menuItems().map(o => ({label: o.label, disabled: !!o.disabled})) : [],
+               actor: m ? { id: m.id, ink: m.ink } : null,
+               hurt: b.party.findIndex(p => p.hp > 0 && p.hp < p.maxHp * 0.4),
+               hasSnack: Object.keys(inv).some(id => inv[id] > 0 && ["cookie","sandwich"].includes(id)) };
     })()`);
     if (!st) { await page.waitForTimeout(150); continue; }
+    lastBattleRounds = st.rounds;
     if (st.msgs > 0) { await page.keyboard.press("KeyZ"); await page.waitForTimeout(100); continue; }
     if (st.phase !== "command") { await page.waitForTimeout(120); continue; }
     if (st.menu === "main") {
-      // select Reach Out (index 2)
-      await g(`window.__game.game.battle.menu.index = 2`);
+      // 0 Fight, 1 Skills, 2 Reach Out, 3 Items, 4 Steady, 5 Run
+      let idx = 2;
+      if (st.hurt >= 0 && st.actor && st.actor.id === "wisp" && st.actor.ink >= 5) idx = 1;
+      else if (st.hurt >= 0 && st.hasSnack) idx = 3;
+      await g(`window.__game.game.battle.menu.index = ${idx}`);
+      await page.keyboard.press("KeyZ");
+    } else if (st.menu === "skill") {
+      const pick = st.items.findIndex((o) => o.label.includes("Warm Glow") && !o.disabled);
+      if (pick < 0) { await page.keyboard.press("KeyX"); } // back to main → reach next loop
+      else { await g(`window.__game.game.battle.menu.index = ${pick}`); await page.keyboard.press("KeyZ"); }
+    } else if (st.menu === "item") {
+      const pick = st.items.findIndex((o) => !o.disabled && (o.label.includes("Cookie") || o.label.includes("Sandwich")));
+      if (pick < 0) { await page.keyboard.press("KeyX"); }
+      else { await g(`window.__game.game.battle.menu.index = ${pick}`); await page.keyboard.press("KeyZ"); }
+    } else if (st.menu === "ally") {
+      await g(`window.__game.game.battle.menu.index = ${st.hurt >= 0 ? st.hurt : 0}`);
       await page.keyboard.press("KeyZ");
     } else if (st.menu === "reach_target") {
       await page.keyboard.press("KeyZ");
     } else if (st.menu === "reach") {
-      // choose first enabled good option: they're ordered good,good,bad — try index 0/1
+      // options are ordered good..., bad last; only the just-used good one is
+      // disabled, so the first enabled entry is always a good option
       const pick = st.items.findIndex((o) => !o.disabled);
       if (pick < 0) { await page.keyboard.press("KeyX"); await g(`window.__game.game.battle.menu.index = 0`); await page.keyboard.press("KeyZ"); }
       else { await g(`window.__game.game.battle.menu.index = ${pick}`); await page.keyboard.press("KeyZ"); }
@@ -226,9 +256,23 @@ await g(`window.__game.game.state.facing = "left"`);
 await key("KeyZ");
 await page.waitForTimeout(400);
 await waitIdle(20000); // includes tp to blank page + s_blank_first with tutorial battle
-if ((await mode()) === "battle") { step = "tutorial battle"; await runBattlePeace(); await waitIdle(20000); }
+if ((await mode()) === "battle") {
+  step = "tutorial battle";
+  await runBattlePeace();
+  if (lastBattleRounds < 2) fail(`tutorial battle ended in ${lastBattleRounds} round(s) — the settle rule should force >= 2`);
+  await waitIdle(20000);
+}
 if ((await g("window.__game.game.state.map")) !== "blank_page") fail("not in blank_page");
 await shot("03_blank_page");
+
+step = "guide book";
+await walkTo(12, 7); await g(`window.__game.game.state.facing="down"`); await key("KeyZ");
+await page.waitForTimeout(400);
+const guideText = await g("window.__game.game.dialogue.text || ''");
+if (!/HOW TO TALK/.test(guideText)) await fail(`the guide book didn't open: ${JSON.stringify(guideText)}`);
+await waitChoice(10000);
+await chooseOption(1); // "How to reach out" page
+await waitIdle(15000);
 
 step = "meadow";
 // starts at (2,7), one tile OUTSIDE the doorway: stepping onto the painted door
@@ -263,6 +307,7 @@ while ((await mode()) !== "battle") {
 }
 await shot("06_tangle");
 await runBattlePeace();
+if (lastBattleRounds < 4) fail(`TANGLE pacified in ${lastBattleRounds} rounds — boss pacing regressed (want >= 4)`);
 step = "after tangle (cg + interlude)";
 await waitIdle(40000);
 if ((await g("window.__game.game.state.pages")) < 1) fail("no page 1");
@@ -327,6 +372,7 @@ await walkTo(10, 6); await g(`window.__game.game.state.facing="up"`); await key(
 }
 await shot("10_keeper");
 await runBattlePeace();
+if (lastBattleRounds < 5) fail(`KEEPER pacified in ${lastBattleRounds} rounds — boss pacing regressed (want >= 5)`);
 await waitIdle(40000);
 if ((await g("window.__game.game.state.pages")) < 3) fail("no page 3");
 
