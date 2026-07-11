@@ -453,7 +453,27 @@ await waitIdle(25000);
 if ((await g("window.__game.game.state.map")) !== "depths_1") fail("no depths");
 await shot("11_depths");
 await goThrough(10, 1, "up", "depths_2"); // s_depths2_enter: page 4 + CG
+// onEnter scripts are QUEUED and start a frame after the transition script
+// ends — waitIdle can slip through that one-frame gap, so give the queued
+// script a beat to begin before driving it
+await page.waitForTimeout(400);
+await waitIdle(60000);
 if ((await g("window.__game.game.state.pages")) < 4) fail("no page 4");
+
+step = "page grants must not stack on re-entry";
+// leaving and re-entering depths_2 replays onEnter — the page 4 grant must be
+// idempotent, or every retreat to a lantern would permanently buff the party
+{
+  const hpBefore = await g("window.__game.game.state.party[0].maxHp");
+  await g(`window.__game.tp("depths_1", 10, 2)`);
+  await page.waitForTimeout(300); await waitIdle(15000);
+  await g(`window.__game.tp("depths_2", 10, 12)`);
+  await page.waitForTimeout(300); await waitIdle(30000);
+  const hpAfter = await g("window.__game.game.state.party[0].maxHp");
+  if (hpAfter !== hpBefore) await fail(`page 4 re-stacked on re-entry: maxHp ${hpBefore} -> ${hpAfter}`);
+  if ((await g("window.__game.game.state.pages")) !== 4) await fail("pages count changed on re-entry");
+}
+
 step = "smudge";
 await walkTo(10, 10); await pressToward("up", 1);
 {

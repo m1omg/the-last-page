@@ -17,6 +17,7 @@ export class MapScene {
     this.trail = []; // recent tile positions for followers
     this.followPos = []; // smoothed follower pixel positions
     this.enemyRt = {};
+    this.fleeGraceT = 0; // chase pause after fleeing a battle
     this.bannerT = 0;
     this.stepBlip = 0;
   }
@@ -29,6 +30,7 @@ export class MapScene {
     this.trail = [];
     this.followPos = [];
     this.enemyRt = {}; // runtime positions for chasing enemies
+    this.fleeGraceT = 0;
     this.bannerT = 2.2;
     this.rescuePlayer();
     if (d.bgm) audio.playBgm(d.bgm);
@@ -99,6 +101,9 @@ export class MapScene {
   }
 
   updateChase(dt) {
+    // just fled a battle: every doodle loses track of the party for a moment,
+    // or the still-adjacent one would re-trigger the fight before you can move
+    if (this.fleeGraceT > 0) { this.fleeGraceT -= dt; return; }
     const st = this.game.state;
     for (const e of this.entitiesAlive()) {
       if (!e.sprite || !e.sprite.startsWith("enemy:") || !e.touch) continue;

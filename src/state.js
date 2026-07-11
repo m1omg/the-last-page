@@ -60,10 +60,19 @@ export function clearSave() {
   localStorage.removeItem(SAVE_KEY);
 }
 
-// A save is only structurally trusted if it matches our shape.
+// A save is only structurally trusted if it matches our shape — deep enough
+// that map/battle code can rely on it (flags/inventory objects, members with
+// real numbers), not just "version 1 with a party array".
 function isValidSave(s) {
   return !!s && s.version === 1 && typeof s.map === "string" && MAPS[s.map]
-    && Array.isArray(s.party) && s.party.length > 0;
+    && Number.isInteger(s.x) && Number.isInteger(s.y)
+    && s.flags && typeof s.flags === "object"
+    && s.inventory && typeof s.inventory === "object"
+    && Array.isArray(s.party) && s.party.length > 0
+    && s.party.every((m) => m && typeof m.id === "string"
+        && Number.isFinite(m.hp) && Number.isFinite(m.maxHp)
+        && Number.isFinite(m.ink) && Number.isFinite(m.maxInk)
+        && Array.isArray(m.skills));
 }
 
 // Download the current save as a .json file the player can back up or move.

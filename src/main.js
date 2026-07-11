@@ -85,9 +85,14 @@ const game = {
       this.battle = new BattleScene(this, cfg, async (result) => {
         this.battle = null;
         this.mode = "map";
-        // fleeing from a chaser would land you right next to it and instantly
-        // re-trigger the fight — running away means it loses track of you
-        if (result === "flee") this.mapScene.enemyRt = {};
+        // fleeing would land you right next to the doodle and instantly
+        // re-trigger the fight: send chasers home AND give the player a grace
+        // window — resetting positions alone isn't enough when the fight was
+        // triggered right at the doodle's home tile
+        if (result === "flee") {
+          this.mapScene.enemyRt = {};
+          this.mapScene.fleeGraceT = 2.0;
+        }
         const d = this.mapScene.def;
         if (d.bgm) audio.playBgm(d.bgm);
         if (result === "lose" && !cfg.final) {

@@ -228,7 +228,11 @@ export class BattleScene {
       acts.push({ kind: "enemyact", actor: e });
       if (e.rallied) acts.push({ kind: "enemyact", actor: e });
     }
-    acts.sort((a, b) => (b.actor.spd || 0) - (a.actor.spd || 0));
+    // Steady and Crumb Wall promise protection "this round", so they must
+    // resolve before enemy actions regardless of speed — otherwise a slow
+    // defender (Biscuit, spd 5) raises the wall after the hits already landed
+    const pri = (a) => (a.kind === "guard" || (a.kind === "skill" && SKILLS[a.skill] && SKILLS[a.skill].kind === "wall")) ? 1000 : 0;
+    acts.sort((a, b) => (pri(b) + (b.actor.spd || 0)) - (pri(a) + (a.actor.spd || 0)));
     this.turnQ = acts;
     this.wall = false;
     this.phase = "anim";

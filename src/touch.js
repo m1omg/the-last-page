@@ -287,8 +287,12 @@ export const touch = {
   // held directions (menus read hit(), so they need fresh edges).
   update() {
     if (pendingTaps.length) {
-      const fns = pendingTaps.splice(0, pendingTaps.length);
-      for (const fn of fns) fn();
+      // run only the FIRST queued tap: any others were hit-tested against the
+      // same (now possibly stale) layout — e.g. a tap that closed a menu plus
+      // a tap on a row of that closed menu. Dropping them beats firing them.
+      const fn = pendingTaps[0];
+      pendingTaps.length = 0;
+      fn();
     }
     const t = now();
     // only promote to a held confirm if the touch is NOT over a tappable UI —

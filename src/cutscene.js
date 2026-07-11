@@ -83,6 +83,9 @@ async function runCmd(game, c) {
       break;
     }
     case "page": {
+      // idempotent: a replayed grant (e.g. re-entering a map whose onEnter
+      // hands out a page) must not stack the stat bonus again
+      if (st.inventory[`page${c.n}`]) break;
       audio.sfx("sfx_page");
       st.pages = Math.max(st.pages, c.n);
       st.inventory[`page${c.n}`] = 1;

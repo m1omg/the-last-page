@@ -629,7 +629,10 @@ export const SCRIPTS = {
   s_fight_inklet: [ { t: "battle", troop: "t_inklet", flagWin: "depths_en1" } ],
   s_fight_inklet_pair: [ { t: "battle", troop: "t_inklet_pair", flagWin: "depths_en2" } ],
   s_depths2_enter: [
+    // iflt pages<4: the whole arrival beat (and its page grant) plays exactly
+    // once — retreating to a lantern and coming back must not replay the CG
     { t: "if", flag: "smudge_done", is: true, then: [], else: [
+      { t: "iflt", key: "pages", value: 4, then: [
       { t: "stopbgm" },
       n("The ink here is perfectly still.\nUnder its surface, enormous and faint, someone half-drawn is waiting."),
       { t: "sfx", name: "sfx_heartbeat" },
@@ -649,6 +652,7 @@ export const SCRIPTS = {
       say("biscuit", "Mira. Whatever rises out of that ink... we're standing with you. Both sides of you."),
       say("wisp", "l-lighting the way. together counts. together ALWAYS counts."),
       { t: "bgm", name: "bgm_depths" },
+      ], else: [] },
     ] },
   ],
   s_smudge_confront: [
