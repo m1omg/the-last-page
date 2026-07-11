@@ -15,7 +15,7 @@ const JPG = [
 const PNG = [
   "en_sniffle", "en_scribble", "en_thornbud", "en_buttoncrab", "en_inklet",
   "boss_tangle", "boss_swan", "boss_keeper", "boss_smudge",
-  "sp_biscuit", "sp_wisp",
+  "sp_biscuit", "sp_wisp", "sp_guidebook",
   "sp_mira_d0", "sp_mira_d1", "sp_mira_l0", "sp_mira_l1",
   "sp_mira_r0", "sp_mira_r1", "sp_mira_u0", "sp_mira_u1",
 ];
