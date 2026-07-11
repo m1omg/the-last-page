@@ -58,7 +58,7 @@ export class BattleScene {
     this.queueMsg(intro);
     if (cfg.tutorial) {
       this.queueMsg("(Battle basics: FIGHT deals damage. REACH OUT is how you talk to sad doodles - fill their hearts and the fight ends peacefully. Emotions beat each other in a circle: GIGGLY beats GRUMPY beats GLOOMY beats GIGGLY.)");
-      this.queueMsg("(A doodle deep in a bad feeling CAN'T HEAR YOU. Reach out once to break the storm - or shift its mood with a skill - and THEN your words land. There's a little book about this back in the Blank Page.)");
+      this.queueMsg("(A doodle deep in a bad feeling CAN'T HEAR YOU. Reach out once to break the storm - or shift its mood with a skill - and THEN your words land. There's a little book about this lying in the Blank Page - once you pick it up, it stays in your POCKETS.)");
     }
   }
 

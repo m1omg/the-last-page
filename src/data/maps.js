@@ -151,8 +151,9 @@ export const MAPS = {
     entities: [
       { id: "lamp", x: 8, y: 6, w: 1, h: 2, interact: "s_lantern_save" },
       { id: "cushion", x: 10, y: 6, w: 2, h: 2, interact: "s_cushion" },
-      // the battle guide, like the tutorial book in a certain white space
-      { id: "guide", x: 12, y: 8, w: 1, h: 1, sprite: "book", interact: "s_guide" },
+      // the battle guide, like the tutorial book in a certain white space —
+      // picked up on first read, then carried in the pockets forever
+      { id: "guide", x: 12, y: 8, w: 1, h: 1, sprite: "book", interact: "s_guide_find", hidden: { flag: "guide_taken", is: true } },
       // The side doors are painted two tiles wide, so their touch zones are too:
       // stepping into the doorway itself must go through, not the far column.
       // The top/bottom doors are NOT widened — rows 2 and 12 are open corridors

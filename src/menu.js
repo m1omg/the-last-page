@@ -124,8 +124,16 @@ export class Menu {
         if (input.hit("down")) { this.index = (this.index + 1) % list.length; audio.sfx("sfx_blip", 0.5); }
         if (input.hit("confirm")) {
           const id = list[this.index];
-          if (ITEMS[id].field && !ITEMS[id].key) { this.sub = { item: id, index: 0 }; audio.sfx("sfx_confirm"); }
-          else audio.sfx("sfx_cancel");
+          if (ITEMS[id].script) {
+            // readable key item (the battle guide): close the menu and read it
+            this.open = false;
+            input.consume("confirm");
+            audio.sfx("sfx_confirm");
+            this.game.runScript(ITEMS[id].script);
+          } else if (ITEMS[id].field && !ITEMS[id].key) {
+            this.sub = { item: id, index: 0 };
+            audio.sfx("sfx_confirm");
+          } else audio.sfx("sfx_cancel");
         }
       }
     } else if (this.tab === 2) {

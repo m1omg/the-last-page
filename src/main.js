@@ -91,7 +91,7 @@ const game = {
         // triggered right at the doodle's home tile
         if (result === "flee") {
           this.mapScene.enemyRt = {};
-          this.mapScene.fleeGraceT = 2.0;
+          this.mapScene.fleeGraceT = 2.5; // enemies flicker + can't engage
         }
         const d = this.mapScene.def;
         if (d.bgm) audio.playBgm(d.bgm);

@@ -17,6 +17,8 @@ export const ITEMS = {
     battle: true, field: false, effect: { revive: 20 },
   },
   // key items
+  // script: selecting it in the pocket menu closes the menu and runs the script
+  guidebook: { name: "How to Talk to Sad Doodles", desc: "You and Ren's battle guide. Choose it to read.", key: true, script: "s_guide" },
   teacup: { name: "Chipped Teacup", desc: "A tiny teacup drawn with great care.", key: true },
   cookieplate: { name: "Plate of Cookies", desc: "Crayon cookies. Zero calories.", key: true },
   suncrayon: { name: "Sun-Yellow Crayon", desc: "Worn down to a stub from drawing suns.", key: true },

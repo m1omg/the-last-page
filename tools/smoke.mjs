@@ -265,14 +265,29 @@ if ((await mode()) === "battle") {
 if ((await g("window.__game.game.state.map")) !== "blank_page") fail("not in blank_page");
 await shot("03_blank_page");
 
-step = "guide book";
+step = "guide book pickup";
 await walkTo(12, 7); await g(`window.__game.game.state.facing="down"`); await key("KeyZ");
 await page.waitForTimeout(400);
 const guideText = await g("window.__game.game.dialogue.text || ''");
 if (!/HOW TO TALK/.test(guideText)) await fail(`the guide book didn't open: ${JSON.stringify(guideText)}`);
-await waitChoice(10000);
-await chooseOption(1); // "How to reach out" page
 await waitIdle(15000);
+if (!(await g("!!window.__game.game.state.inventory.guidebook"))) await fail("guide book not in the inventory after pickup");
+if (!(await flag("guide_taken"))) await fail("guide_taken flag not set");
+
+step = "guide book reads from the pockets";
+await key("KeyX"); // open the menu (Pockets tab is default)
+await page.waitForTimeout(300);
+{
+  const idx = await g(`window.__game.game.menu.itemList().indexOf("guidebook")`);
+  if (idx < 0) await fail("guidebook not listed in the pockets");
+  await g(`window.__game.game.menu.index = ${idx}`);
+  await key("KeyZ");
+  await page.waitForTimeout(400);
+  if (await g("window.__game.game.menu.open")) await fail("menu didn't close to read the guide");
+  await waitChoice(10000);
+  await chooseOption(1); // "How to reach out" page
+  await waitIdle(15000);
+}
 
 step = "lose -> lamp must not leak script state";
 // Losing a battle embedded in a script and continuing from the save must NOT
@@ -347,6 +362,36 @@ step = "meadow";
 // at column 1 must transfer. Starting at (1,7) would only prove column 0 works.
 await goThrough(2, 7, "left", "meadow_1");
 await shot("04_meadow");
+
+step = "flee grace";
+// stand next to the sniffle chaser, get engaged, flee — then for 2.5s the
+// doodle must flicker and be unable to engage (passively or by bumping)
+{
+  const tf = Date.now();
+  await walkTo(6, 4); // enemy home tile is (7,4)
+  while ((await mode()) !== "battle") {
+    if (Date.now() - tf > 15000) fail("chaser never engaged for the flee test");
+    await page.waitForTimeout(120);
+  }
+  await g(`(() => { const b = window.__game.game.battle; b.msgQ = []; b.result = "flee"; b.phase = "end"; })()`);
+  while ((await mode()) !== "map") {
+    if (Date.now() - tf > 25000) fail("flee never returned to the map");
+    await page.waitForTimeout(100);
+  }
+  if (!((await g("window.__game.game.mapScene.fleeGraceT")) > 0)) await fail("no flee grace after running away");
+  await pressToward("right", 2); // bump straight into the doodle during grace
+  await page.waitForTimeout(400);
+  if ((await mode()) === "battle") await fail("doodle engaged during the flee grace");
+  await page.waitForTimeout(2600); // grace expires; still adjacent -> re-engage
+  const t2 = Date.now();
+  while ((await mode()) !== "battle") {
+    if (Date.now() - t2 > 8000) await fail("doodle never re-engaged after the grace expired");
+    await page.waitForTimeout(150);
+  }
+  await runBattlePeace(); // resolve it for real this time (sets meadow_en1)
+  await waitIdle(15000);
+}
+
 // grab teacup
 await walkTo(3, 4); await g(`window.__game.game.state.facing="up"`); await key("KeyZ"); await waitIdle();
 await walkTo(3, 3); await key("KeyZ"); await waitIdle();

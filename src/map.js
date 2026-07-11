@@ -175,9 +175,12 @@ export class MapScene {
         if (!this.solid(nx, ny)) {
           this.moving = { fx: st.x, fy: st.y, tx: nx, ty: ny, t: 0 };
         } else {
-          // bumping into a solid entity (like a wild doodle) triggers it
+          // bumping into a solid entity (like a wild doodle) triggers it —
+          // except during the flee grace, when doodles can't engage at all
           const e = this.entityAt(nx, ny, "touch");
-          if (e && e.sprite) { g.runScript(e.touch); }
+          if (e && e.sprite && !(this.fleeGraceT > 0 && e.sprite.startsWith("enemy:"))) {
+            g.runScript(e.touch);
+          }
         }
         break;
       }
@@ -282,6 +285,9 @@ export class MapScene {
           ctx.fillText("📖", cx, cy + bob);
         }
       } else if (e.sprite.startsWith("enemy:")) {
+        // during the flee grace doodles flicker — they can see you, they just
+        // agreed (reluctantly) to let you go
+        if (this.fleeGraceT > 0 && Math.floor(performance.now() / 130) % 2) continue;
         const img = assets.img(e.sprite.slice(6));
         const bob = Math.sin(performance.now() / 350 + e.x) * 3;
         if (img) {

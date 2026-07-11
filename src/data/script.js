@@ -188,10 +188,19 @@ export const SCRIPTS = {
   ],
   s_cushion: [ n("The cushion has one job and it does it magnificently.") ],
   s_crayons: [ n("Someone's crayons, dropped mid-drawing. The sun-yellow one is missing.") ],
-  // The battle guide book — readable any time, pages picked from a menu so
-  // players can re-check one rule without re-reading the whole thing.
-  s_guide: [
+  // The battle guide book: found once in the hub, then carried as a key item —
+  // choosing it in the pocket menu runs s_guide (see items.js `script`).
+  s_guide_find: [
     n("A little book lies open on the paper floor: 'HOW TO TALK TO SAD DOODLES.'\nHalf the letters are yours. The other half are Ren's. You wrote it together,\nback when the worst monster in here was bedtime."),
+    { t: "sfx", name: "sfx_confirm" },
+    { t: "give", item: "guidebook" },
+    { t: "flag", key: "guide_taken", value: true },
+    n("You tuck the guide into your pocket. (Read it any time from POCKETS.)"),
+  ],
+  // Readable any time from the pockets; pages picked from a menu so players
+  // can re-check one rule without re-reading the whole thing.
+  s_guide: [
+    n("'HOW TO TALK TO SAD DOODLES.' Half the letters are yours.\nThe other half are Ren's. You wrote it together, back when\nthe worst monster in here was bedtime."),
     { t: "choice", options: [
       { label: "Feelings beat feelings", then: [
         n("Page one. Three crayon faces chase each other in a circle:\nGIGGLY beats GRUMPY beats GLOOMY beats GIGGLY.\nHit a doodle with the feeling that beats its feeling and it lands HARDER."),
@@ -306,10 +315,12 @@ export const SCRIPTS = {
     mira("neutral", "Then let's fix it. Like we always fixed things."),
     say("biscuit", "THERE she is. Sir Biscuit of the Round Plate, at your service! Sword's a skewer, heart's a furnace, let's GO."),
     { t: "sfx", name: "sfx_victory" },
+    // hide the NPC in the same beat the follower appears, or two Biscuits
+    // stand around for the rest of the conversation
+    { t: "flag", key: "biscuit_joined", value: true },
     { t: "join", member: "biscuit" },
     n("SIR BISCUIT joined the party!"),
     say("biscuit", "One thing first - the stain hates HAPPINESS. And nothing on this page is happier than a proper tea party. Fetch the old set, would you? The TEACUP is in the meadow grass. The COOKIE PLATE and the SUN CRAYON are around here somewhere."),
-    { t: "flag", key: "biscuit_joined", value: true },
   ],
   s_find_plate: [
     { t: "sfx", name: "sfx_confirm" },
@@ -408,10 +419,10 @@ export const SCRIPTS = {
     mira("neutral", "Then we light it again. Together. That's allowed, you know - doing the scary thing WITH someone."),
     say("wisp", "...together counts? together counts. okay. okay!! I have exactly one flame and it's yours."),
     { t: "sfx", name: "sfx_victory" },
+    { t: "flag", key: "wisp_joined", value: true }, // hide the NPC before the follower appears
     { t: "join", member: "wisp" },
     n("WISP joined the party!"),
     say("wisp", "the big candle needs a real fire to start - my flame's too small alone. there's a match somewhere by the fallen crane. Ren drew it. for emergencies."),
-    { t: "flag", key: "wisp_joined", value: true },
   ],
   s_shrine: [
     { t: "if", flag: "woods_boss_done", is: true, then: [
