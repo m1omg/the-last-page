@@ -43,7 +43,9 @@ export function loadGame() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return null;
     const s = JSON.parse(raw);
-    if (!s || s.version !== 1) return null;
+    // same structural bar as import: a version-1 save with a broken shape
+    // (unknown map, empty party) would otherwise crash enterMap
+    if (!isValidSave(s)) return null;
     return s;
   } catch (e) {
     return null;

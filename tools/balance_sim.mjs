@@ -14,8 +14,14 @@ const ADV = { giggly: "grumpy", grumpy: "gloomy", gloomy: "giggly" };
 const advMult = (a, d) => (ADV[a] === d ? 1.4 : ADV[d] === a ? 0.75 : 1.0);
 const RUNS = 400;
 
-function mkParty(ids) {
-  return ids.map((id) => ({ id, ...structuredClone(PARTY_DEFS[id]), maxHp: PARTY_DEFS[id].hp, maxInk: PARTY_DEFS[id].ink, emotion: "neutral", guard: false }));
+// pages = torn pages collected before this fight: each grants +8 maxHp/+4 maxInk
+// (see the "page" command in src/cutscene.js) — the party's only growth
+function mkParty(ids, pages = 0) {
+  return ids.map((id) => {
+    const d = structuredClone(PARTY_DEFS[id]);
+    const hp = d.hp + pages * 8, ink = d.ink + pages * 4;
+    return { id, ...d, hp, ink, maxHp: hp, maxInk: ink, emotion: "neutral", guard: false };
+  });
 }
 function mkFoes(troop) {
   return TROOPS[troop].map((id) => {
@@ -82,8 +88,8 @@ function reach(e, o) {
 }
 
 // one battle; policy = "peace" | "fight". Returns { rounds, survived, partyHpLeft }
-function sim(partyIds, troop, policy) {
-  const party = mkParty(partyIds);
+function sim(partyIds, troop, policy, pages) {
+  const party = mkParty(partyIds, pages);
   const foes = mkFoes(troop);
   const aliveFoes = () => foes.filter((f) => f.hp > 0 && !f.soothed);
   let wall = false;
@@ -152,12 +158,12 @@ function sim(partyIds, troop, policy) {
   return { rounds: 40, survived: party.some((p) => p.hp > 0) };
 }
 
-function report(label, partyIds, troop) {
+function report(label, partyIds, troop, pages = 0) {
   for (const policy of ["fight", "peace"]) {
     if (policy === "fight" && ENEMIES[TROOPS[troop][0]].immune) continue;
     const rs = [], deaths = { n: 0 };
     for (let i = 0; i < RUNS; i++) {
-      const r = sim(partyIds, troop, policy);
+      const r = sim(partyIds, troop, policy, pages);
       rs.push(r.rounds);
       if (!r.survived) deaths.n++;
     }
@@ -173,8 +179,8 @@ report("tutorial (Mira solo)", ["mira"], "t_sniffle");
 report("meadow scribble (duo)", ["mira", "biscuit"], "t_scribble");
 report("meadow pair (duo)", ["mira", "biscuit"], "t_meadow_pair");
 report("TANGLE (duo)", ["mira", "biscuit"], "t_boss_tangle");
-report("woods thornbud (trio)", ["mira", "biscuit", "wisp"], "t_thornbud");
-report("SWAN (trio)", ["mira", "biscuit", "wisp"], "t_boss_swan");
-report("bay clasp (trio)", ["mira", "biscuit", "wisp"], "t_crab");
-report("KEEPER (trio)", ["mira", "biscuit", "wisp"], "t_boss_keeper");
-report("depths inklet pair (trio)", ["mira", "biscuit", "wisp"], "t_inklet_pair");
+report("woods thornbud (trio)", ["mira", "biscuit", "wisp"], "t_thornbud", 1);
+report("SWAN (trio)", ["mira", "biscuit", "wisp"], "t_boss_swan", 1);
+report("bay clasp (trio)", ["mira", "biscuit", "wisp"], "t_crab", 2);
+report("KEEPER (trio)", ["mira", "biscuit", "wisp"], "t_boss_keeper", 2);
+report("depths inklet pair (trio)", ["mira", "biscuit", "wisp"], "t_inklet_pair", 3);

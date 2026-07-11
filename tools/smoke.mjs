@@ -274,6 +274,74 @@ await waitChoice(10000);
 await chooseOption(1); // "How to reach out" page
 await waitIdle(15000);
 
+step = "lose -> lamp must not leak script state";
+// Losing a battle embedded in a script and continuing from the save must NOT
+// run the script's remaining commands (a boss's page/CG/save chain) against
+// the reloaded state. The flag below is the leak detector.
+await g(`window.__game.game.saveNow()`);
+await g(`window.__game.game.runScript([
+  { t: "battle", troop: "t_sniffle", flagWin: "leak_flagwin" },
+  { t: "flag", key: "leak_after_lose", value: true },
+])`);
+{
+  const tl = Date.now();
+  while ((await mode()) !== "battle") {
+    if (Date.now() - tl > 15000) fail("leak-test battle never started");
+    await page.keyboard.press("KeyZ");
+    await page.waitForTimeout(120);
+  }
+  await g(`(() => { const b = window.__game.game.battle; b.msgQ = []; b.result = "lose"; b.phase = "end"; })()`);
+  while ((await mode()) !== "gameover") {
+    if (Date.now() - tl > 25000) fail("no gameover after forced loss");
+    await page.waitForTimeout(120);
+  }
+  await g(`window.__game.game.gameoverIndex = 0`); // "Return to the last warm lamp"
+  await page.keyboard.press("KeyZ");
+  while ((await mode()) !== "map") {
+    if (Date.now() - tl > 40000) fail("lamp continue never reached the map");
+    await page.waitForTimeout(150);
+  }
+  await waitIdle(15000);
+  if (await flag("leak_after_lose")) await fail("script continued past a lost battle onto the reloaded save");
+  if (await flag("leak_flagwin")) await fail("flagWin set on a lost battle");
+}
+
+step = "lose -> title must not leak either";
+// the other game-over exit: toTitle() has the same script-unwind hazard
+await g(`window.__game.game.runScript([
+  { t: "battle", troop: "t_sniffle" },
+  { t: "flag", key: "leak_via_title", value: true },
+])`);
+{
+  const tl = Date.now();
+  while ((await mode()) !== "battle") {
+    if (Date.now() - tl > 15000) fail("title-leak battle never started");
+    await page.keyboard.press("KeyZ");
+    await page.waitForTimeout(120);
+  }
+  await g(`(() => { const b = window.__game.game.battle; b.msgQ = []; b.result = "lose"; b.phase = "end"; })()`);
+  while ((await mode()) !== "gameover") {
+    if (Date.now() - tl > 25000) fail("no gameover after forced loss (title leg)");
+    await page.waitForTimeout(120);
+  }
+  await g(`window.__game.game.gameoverIndex = 1`); // "Back to the title"
+  await page.keyboard.press("KeyZ");
+  while ((await mode()) !== "title") {
+    if (Date.now() - tl > 40000) fail("never reached the title after loss");
+    await page.waitForTimeout(150);
+  }
+  await page.waitForTimeout(600);
+  if (await flag("leak_via_title")) await fail("script continued past a lost battle under the title screen");
+  // back into the game to resume the playthrough
+  await g(`window.__game.game.title.index = 0`); // Continue
+  await page.keyboard.press("KeyZ");
+  while ((await mode()) !== "map") {
+    if (Date.now() - tl > 60000) fail("Continue after title-leg never loaded");
+    await page.waitForTimeout(150);
+  }
+  await waitIdle(15000);
+}
+
 step = "meadow";
 // starts at (2,7), one tile OUTSIDE the doorway: stepping onto the painted door
 // at column 1 must transfer. Starting at (1,7) would only prove column 0 works.
@@ -436,6 +504,19 @@ step = "true ending";
   }
 }
 await shot("15_credits");
+
+step = "leaving the credits";
+// pressing Z on the credits fades to the title; this used to null-deref
+// game.credits during the fade and freeze the game on its final screen
+await page.waitForTimeout(4300); // credits accept input after 4s
+await page.keyboard.press("KeyZ");
+{
+  const tc = Date.now();
+  while ((await mode()) !== "title") {
+    if (Date.now() - tc > 15000) fail("credits never returned to the title");
+    await page.waitForTimeout(200);
+  }
+}
 
 if (errors.length) fail("console errors during run");
 console.log("SMOKE OK — full true-ending playthrough, zero console errors");

@@ -85,6 +85,9 @@ const game = {
       this.battle = new BattleScene(this, cfg, async (result) => {
         this.battle = null;
         this.mode = "map";
+        // fleeing from a chaser would land you right next to it and instantly
+        // re-trigger the fight — running away means it loses track of you
+        if (result === "flee") this.mapScene.enemyRt = {};
         const d = this.mapScene.def;
         if (d.bgm) audio.playBgm(d.bgm);
         if (result === "lose" && !cfg.final) {
@@ -107,6 +110,7 @@ const game = {
   async gameOver() {
     this.mode = "gameover";
     this.gameoverIndex = 0;
+    this._goBusy = false;
     audio.stopBgm({ fade: 1.5 });
     audio.sfx("sfx_defeat");
     await this.waitFor(() => this.mode !== "gameover");
@@ -124,9 +128,13 @@ const game = {
     this.abortCutscenes = true;
     await this.fadeOut(800);
     audio.stopBgm();
-    this.abortCutscenes = false;
     this.mode = "title";
     this.title = { index: 0, t: 0 };
+    // same hazard as continueGame: a script awaiting a lost battle only unwinds
+    // AFTER the mode flips — keep the abort up until it has fully died, or its
+    // remaining commands (page/CG/tp) would fire under the title screen
+    await this.waitFor(() => this.cutsceneDepth === 0);
+    this.abortCutscenes = false;
     audio.playBgm("bgm_title");
     await this.fadeIn(800);
   },
@@ -144,10 +152,16 @@ const game = {
   async continueGame() {
     const s = loadGame();
     if (!s) return;
+    // A battle lost mid-script resolves as "lose" AFTER we load: without this,
+    // the rest of that script (a boss's page/CG/interlude/save chain) would run
+    // against the freshly loaded state and save the corruption. Kill it first.
+    this.abortCutscenes = true;
     await this.fadeOut(700);
     this.state = s;
     window.__game.state = this.state;
-    this.mode = "map";
+    this.mode = "map"; // lets gameOver()'s waiter resolve, unwinding the script
+    await this.waitFor(() => this.cutsceneDepth === 0);
+    this.abortCutscenes = false;
     this.mapScene.enterMap();
     await this.fadeIn(700);
   },
@@ -395,6 +409,10 @@ const CREDITS = [
   "press Z to return to the title",
 ];
 function updateCredits(dt) {
+  // toTitle() fades for ~800ms with mode still "credits"; without the guard
+  // the frame after confirm would deref null and kill the rAF loop (a frozen
+  // black screen as the very last thing the player sees)
+  if (!game.credits) return;
   game.credits.t += dt;
   if (input.hit("confirm") && game.credits.t > 4) {
     game.credits = null;
@@ -404,6 +422,7 @@ function updateCredits(dt) {
 function drawCredits() {
   ctx.fillStyle = "#141210";
   ctx.fillRect(0, 0, 960, 720);
+  if (!game.credits) return; // fading out to the title
   const scroll = Math.min(game.credits.t * 34, CREDITS.length * 40 - 200);
   CREDITS.forEach((line, i) => {
     const y = 720 - scroll + i * 40;
@@ -417,10 +436,12 @@ function drawCredits() {
 
 // ------------------------------------------------------------ game over
 function updateGameover(dt) {
+  if (game._goBusy) return; // an exit is already fading; ignore mashed confirms
   const opts = hasSave() ? ["Return to the last warm lamp", "Back to the title"] : ["Back to the title"];
   if (input.hit("up") || input.hit("down")) { game.gameoverIndex = (game.gameoverIndex + 1) % opts.length; audio.sfx("sfx_blip", 0.5); }
   if (input.hit("confirm")) {
     audio.sfx("sfx_confirm");
+    game._goBusy = true;
     if (opts[game.gameoverIndex].startsWith("Return")) {
       game.continueGame();
     } else {

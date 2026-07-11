@@ -262,10 +262,12 @@ export const touch = {
       if (e.pointerType === "touch" || e.button !== 0) return;
       handleTap(e.clientX, e.clientY);
     });
-    // right-click = X (open/close the menu, back out of submenus)
+    // right-click = X (open/close the menu, back out of submenus). Only real
+    // right-clicks (button 2): some mobile browsers synthesize a contextmenu
+    // from a long-press with button 0, which must not interrupt drag-to-walk.
     stage.addEventListener("contextmenu", (e) => {
       e.preventDefault();
-      input.tap("cancel");
+      if (e.button === 2) input.tap("cancel");
     });
     // pointer cursor over anything actually clickable
     stage.addEventListener("mousemove", (e) => {
