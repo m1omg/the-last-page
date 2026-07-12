@@ -95,6 +95,9 @@ doodle-battles, no self-harm. It aims for a soft landing.
 
 ## How it was made
 
+The original brief, scoping decisions, and the full story bible are preserved
+in [docs/ORIGIN.md](docs/ORIGIN.md).
+
 - **Code, story, music** — Claude (Fable 5), via Claude Code
 - **Illustrations** — GPT Image 2, generated through the Codex CLI
   (`tools/prompts.json` + `tools/gen_images.sh`, post-processed by
