@@ -15,6 +15,11 @@ export const SKILLS = {
     desc: "So annoying it works. Enemy becomes GRUMPY.",
     kind: "emotion", emotion: "grumpy",
   },
+  silly_story: {
+    name: "Silly Story", ink: 5, target: "enemy",
+    desc: "The one about the trumpets. Enemy becomes GIGGLY - it listens double, but giggly doodles dodge and swing wild.",
+    kind: "emotion", emotion: "giggly",
+  },
   valiant_chomp: {
     name: "Valiant Chomp", ink: 4, target: "enemy",
     desc: "A knight bites back. 160% damage, but Sir Biscuit gets GRUMPY.",

@@ -306,11 +306,12 @@ export class MapScene {
       }
     }
 
-    // followers chase the trail with smooth interpolation + a walk bounce
+    // followers chase the trail with smooth interpolation + a walk bounce —
+    // but doodles only exist inside the sketchbook, never in the real world
     const now = performance.now();
     const fdt = Math.min(0.05, (now - (this._followT || now)) / 1000);
     this._followT = now;
-    const followers = st.party.slice(1);
+    const followers = d.noFollowers ? [] : st.party.slice(1);
     followers.forEach((m, i) => {
       const pos = this.trail[Math.min(this.trail.length - 1, i * 2 + 1)];
       if (!pos) return;
@@ -336,6 +337,9 @@ export class MapScene {
     const [px, py] = this.playerPixelPos();
     this.drawMira(ctx, px, py);
 
+    // flyer: something alive in the sky, above everything on the page
+    if (d.flyer && st.flags[d.flyer.flag]) this.drawFlyer(ctx, d.flyer);
+
     if (g.debug) {
       ctx.save();
       ctx.globalAlpha = 0.35;
@@ -359,6 +363,36 @@ export class MapScene {
       drawText(ctx, MAP_NAMES[st.map], 480, 40, { size: 22, bold: true, align: "center", color: "#5a4634" });
       ctx.restore();
     }
+  }
+
+  // The Paper Swan circling the woods after the peaceful resolution — the
+  // proof, on screen, that she flies. Crooked and beautiful. A slow lazy
+  // figure over the treetops, with her shadow sliding across the ground.
+  drawFlyer(ctx, fl) {
+    const t = performance.now() / 1000;
+    const cx = 480 + Math.sin(t * 0.21) * 330;
+    const cy = 140 + Math.sin(t * 0.42 + 1.3) * 65;
+    const going = Math.cos(t * 0.21); // horizontal direction, for facing
+    // ground shadow far below the glide line sells the altitude
+    ctx.save();
+    ctx.fillStyle = "rgba(30,25,40,0.16)";
+    ctx.beginPath();
+    ctx.ellipse(cx, cy + 200, 44, 11, 0, 0, Math.PI * 2);
+    ctx.fill();
+    const img = assets.img(fl.sprite);
+    if (img) {
+      ctx.translate(cx, cy + Math.sin(t * 1.7) * 6);
+      if (going < 0) ctx.scale(-1, 1);
+      ctx.rotate(Math.sin(t * 0.8) * 0.06); // the crooked-flying wobble
+      const w = TILE * 2.7, h = w * (img.height / img.width);
+      ctx.drawImage(img, -w / 2, -h / 2, w, h);
+    } else {
+      ctx.font = "40px sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText("🕊", cx, cy);
+    }
+    ctx.restore();
   }
 
   drawMira(ctx, px, py) {

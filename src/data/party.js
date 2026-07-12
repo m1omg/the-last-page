@@ -3,7 +3,7 @@ export const PARTY_DEFS = {
   mira: {
     name: "Mira", portrait: "mira",
     hp: 45, ink: 20, atk: 10, def: 6, spd: 8,
-    skills: ["doodle_dash", "cheer", "grump_face"],
+    skills: ["doodle_dash", "cheer", "grump_face", "silly_story"],
   },
   biscuit: {
     name: "Sir Biscuit", portrait: "biscuit",

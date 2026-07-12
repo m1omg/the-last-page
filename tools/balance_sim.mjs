@@ -27,7 +27,7 @@ function mkFoes(troop) {
   return TROOPS[troop].map((id) => {
     const d = ENEMIES[id];
     return { id, def: d, hp: d.hp, maxHp: d.hp, atk: d.atk, defs: d.def, spd: d.spd,
-             emotion: d.emotion || "neutral", calm: 0, lastReach: null, settled: false, rallied: false, guard: false, soothed: false };
+             emotion: d.emotion || "neutral", calm: 0, lastReach: null, settled: 0, rallied: false, guard: false, soothed: false };
   });
 }
 
@@ -61,6 +61,7 @@ function enemyAct(e, party, wall) {
     for (const t of list) {
       let raw = e.atk * (act.mult || 1) * soften;
       if (e.emotion === "grumpy") raw *= 1.2;
+      if (e.emotion === "giggly") raw *= 1.15; // overexcited — swings wild
       raw *= advMult(e.emotion, t.emotion);
       raw -= t.def * 0.55;
       t.hp = Math.max(0, t.hp - dmgTo(t, Math.max(1, raw), wall, true));
@@ -79,11 +80,11 @@ function enemyAct(e, party, wall) {
 }
 
 function reach(e, o) {
-  if (!o.good) { e.calm = Math.max(0, e.calm - 1); e.emotion = e.def.emotion; e.lastReach = null; return; }
+  if (!o.good) { e.calm = Math.max(0, e.calm - 1); if (e.emotion !== "giggly") e.emotion = e.def.emotion; e.lastReach = null; return; }
   if (o.label === e.lastReach) return;
   if (e.emotion === e.def.emotion) { e.emotion = "neutral"; e.lastReach = o.label; return; }
-  if (e.settled) return;
-  e.calm++; e.settled = true; e.lastReach = o.label;
+  if (e.settled >= (e.emotion === "giggly" ? 2 : 1)) return;
+  e.calm++; e.settled++; e.lastReach = o.label;
   if (e.calm >= e.def.calmNeed) e.soothed = true;
 }
 
@@ -96,7 +97,7 @@ function sim(partyIds, troop, policy, pages) {
 
   for (let round = 1; round <= 40; round++) {
     wall = false;
-    for (const f of foes) f.settled = false;
+    for (const f of foes) f.settled = 0;
     const acts = [];
     // --- party decisions (simple competent play) ---
     for (const m of party.filter((p) => p.hp > 0)) {

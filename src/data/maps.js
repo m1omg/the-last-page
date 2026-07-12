@@ -9,7 +9,7 @@ export const ROWS = 15;
 export const MAPS = {
   // ------------------------------------------------------------ real world
   real_bedroom: {
-    bg: "bg_real_bedroom", bgm: "bgm_real", dark: true,
+    bg: "bg_real_bedroom", bgm: "bgm_real", dark: true, noFollowers: true,
     grid: [
       "####################",
       "####################",
@@ -43,7 +43,7 @@ export const MAPS = {
     ],
   },
   real_hall: {
-    bg: "bg_real_hall", bgm: "bgm_real", dark: true,
+    bg: "bg_real_hall", bgm: "bgm_real", dark: true, noFollowers: true,
     grid: [
       "####################",
       "####..######..######",
@@ -73,11 +73,12 @@ export const MAPS = {
       { id: "fridge", x: 18, y: 4, w: 2, h: 3, interact: "s_fridge" },
       { id: "sofa", x: 4, y: 6, w: 6, h: 3, interact: "s_sofa" },
       { id: "teatable", x: 4, y: 9, w: 4, h: 2, interact: "s_teatable" },
+      { id: "tv", x: 4, y: 13, w: 3, h: 1, interact: "s_tv" },
       { id: "frontdoor", x: 8, y: 13, w: 2, h: 1, touch: "s_front_door" },
     ],
   },
   real_street: {
-    bg: "bg_real_street", bgm: null, dark: true,
+    bg: "bg_real_street", bgm: null, dark: true, noFollowers: true,
     grid: [
       "########....########",
       "########....########",
@@ -103,7 +104,7 @@ export const MAPS = {
     ],
   },
   hospital_room: {
-    bg: "bg_hospital_room", bgm: null,
+    bg: "bg_hospital_room", bgm: null, noFollowers: true,
     grid: [
       "####################",
       "####################",
@@ -232,6 +233,7 @@ export const MAPS = {
   },
   woods_1: {
     bg: "bg_woods_1", bgm: "bgm_woods",
+    flyer: { sprite: "sp_swan_fly", flag: "swan_peace" },
     grid: [
       "########....########",
       "#####..........#####",
@@ -261,6 +263,7 @@ export const MAPS = {
   },
   woods_2: {
     bg: "bg_woods_2", bgm: "bgm_woods",
+    flyer: { sprite: "sp_swan_fly", flag: "swan_peace" },
     grid: [
       "####################",
       "####################",

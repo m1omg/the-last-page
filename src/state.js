@@ -46,6 +46,7 @@ export function loadGame() {
     // same structural bar as import: a version-1 save with a broken shape
     // (unknown map, empty party) would otherwise crash enterMap
     if (!isValidSave(s)) return null;
+    migrateSave(s);
     return s;
   } catch (e) {
     return null;
@@ -58,6 +59,16 @@ export function hasSave() {
 
 export function clearSave() {
   localStorage.removeItem(SAVE_KEY);
+}
+
+// Old saves stay loadable when the game grows: a member saved before a skill
+// was added to their PARTY_DEFS entry learns it here, in saved order first.
+function migrateSave(s) {
+  for (const m of s.party) {
+    const d = PARTY_DEFS[m.id];
+    if (!d) continue;
+    for (const sk of d.skills) if (!m.skills.includes(sk)) m.skills.push(sk);
+  }
 }
 
 // A save is only structurally trusted if it matches our shape — deep enough
@@ -109,6 +120,7 @@ export function importSave(onResult) {
       try { s = JSON.parse(String(reader.result)); }
       catch { onResult(false, "not a valid file"); return; }
       if (!isValidSave(s)) { onResult(false, "not a Last Page save"); return; }
+      migrateSave(s);
       localStorage.setItem(SAVE_KEY, JSON.stringify(s));
       onResult(true);
     };

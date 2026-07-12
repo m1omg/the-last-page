@@ -84,7 +84,9 @@ is also available on the title screen.
   GLOOMY > GIGGLY) and Undertale-style **Reach Out** — every enemy, including
   every boss, can be resolved without violence. A doodle deep in a bad feeling
   can't hear you: break the storm (or shift its mood with a skill) and *then*
-  your words land, one heart a round. There's a guide book in the Blank Page.
+  your words land, one heart a round — or two, if you cheer it GIGGLY first.
+  Risky, though: a giggly doodle dodges and swings wild if your words fail.
+  There's a guide book in the Blank Page.
 - 3 party members, skills, items, snacks, a boss that cannot be fought at all
 
 ## Content note

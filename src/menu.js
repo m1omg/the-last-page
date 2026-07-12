@@ -193,10 +193,14 @@ export class Menu {
       if (this.sub) {
         drawBox(ctx, 560, 200, 260, st.party.length * 44 + 30, { seed: 99 });
         hotspots.rows(565, 208, 250, 44, st.party.length, (i) => { this.sub.index = i; input.tap("confirm"); });
+        // preview the stat the item actually restores — Juice should show ink
+        const it = ITEMS[this.sub.item];
+        const inkOnly = it.effect && it.effect.ink && !it.effect.hp;
         st.party.forEach((m, i) => {
           const sel = i === this.sub.index;
           if (sel) drawText(ctx, "☞", 575, 216 + i * 44, { size: 20, color: "#b8452e" });
-          drawText(ctx, `${m.name}  ${m.hp}/${m.maxHp}`, 605, 216 + i * 44, { size: 19, bold: sel });
+          drawText(ctx, inkOnly ? `${m.name}  ${m.ink}/${m.maxInk}✒` : `${m.name}  ${m.hp}/${m.maxHp}`,
+            605, 216 + i * 44, { size: 19, bold: sel });
         });
       }
     } else if (this.tab === 1) {

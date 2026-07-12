@@ -107,7 +107,7 @@ export const SCRIPTS = {
     n("Two cups and a teapot, set out from force of habit.\nNobody drank from either."),
   ],
   s_fridge: [
-    n("The fridge hums its one long note. Inside: a casserole from a neighbour,\nlabelled with a date, untouched. Ren's chocolate milk, also untouched.\nNobody has been able to throw it out."),
+    n("The fridge hums its one long note. Inside: a casserole from a neighbour,\nlabelled with a date, untouched. And one chocolate milk - Ren's brand.\nMom kept one in the door because Ren practically lived here.\nNobody has been able to throw it out."),
   ],
   s_kitchen: [
     { t: "if", flag: "interlude2", is: true, then: [
@@ -115,6 +115,9 @@ export const SCRIPTS = {
     ], else: [
       n("The kettle is cold. Mom's shift ends after midnight again.\nThe fridge hums its one long note."),
     ] },
+  ],
+  s_tv: [
+    n("The TV. Movie nights happened right here - one blanket, one bag of chips,\ntwo sets of elbows fighting over it.\nIt hasn't been on in weeks. The dark screen reflects the whole quiet room."),
   ],
   s_sofa: [
     { t: "if", flag: "interlude3", is: true, then: [
@@ -209,6 +212,7 @@ export const SCRIPTS = {
       { label: "How to reach out", then: [
         n("Page two. A doodle with a scribbled-out head, and the same doodle again,\nlistening. Under it: 'A doodle deep in a bad feeling CAN'T HEAR YOU.\nReach out once to break the storm - or change its mood with a skill - THEN talk.'"),
         n("'One heart a turn. That's as fast as anyone's heart un-hurts.\nSay something NEW each time - nobody wants the same comfort twice in a row.\nAnd if you say the WRONG thing... the storm comes back. Be brave. Be kind.'"),
+        n("In the margin, in Ren's biggest letters: 'CHEER THEM UP!! a GIGGLY doodle\nlistens DOUBLE - two hearts a turn!! but if you blow it, the giggle goes WILD:\nit dodges and swings hard until the mood breaks. high risk. high friendship.'"),
         n("At the bottom, small, in your handwriting:\n'Hearts also make them swing softer. Kindness is armor. - M.'"),
       ] },
       { label: "Staying un-torn", then: [
@@ -394,8 +398,13 @@ export const SCRIPTS = {
   ],
   s_creek: [ n("A creek of folded blue paper, going glug-glug in careful handwriting.\nThe stepping stones are flat and trustworthy.") ],
   s_fireflies: [
-    n("Paper fireflies cluster in the dark like nervous punctuation."),
-    say("Fireflies", "she won't sing... the swan won't sing... she folded her song away..."),
+    { t: "if", flag: "swan_peace", is: true, then: [
+      n("Paper fireflies spiral upward in loose figure-eights,\nfollowing a white shape that circles above the trees."),
+      say("Fireflies", "she sings... she sings again... it comes out crooked now...\nit's better crooked..."),
+    ], else: [
+      n("Paper fireflies cluster in the dark like nervous punctuation."),
+      say("Fireflies", "she won't sing... the swan won't sing... she folded her song away..."),
+    ] },
   ],
   s_fight_thornbud: [ { t: "battle", troop: "t_thornbud", flagWin: "woods_en1" } ],
   s_fight_woods_pair: [ { t: "battle", troop: "t_woods_pair", flagWin: "woods_en2" } ],
@@ -429,7 +438,7 @@ export const SCRIPTS = {
       n("The great candle burns steady. The tea-lights lean toward it like children\nat story time."),
     ], else: [
       { t: "if", flag: "wisp_joined", is: false, then: [
-        n("A great white candle stands unlit in its paper alcove.\nSeven tiny tea-lights flicker around it, barely holding on.\nSomething whimpers behind the shrine."),
+        n("A great white candle stands unlit in its paper alcove.\nSix tiny tea-lights flicker around it, barely holding on.\nSomething whimpers behind the shrine."),
       ], else: [
         { t: "if", flag: "got_match", is: true, then: [
           say("wisp", "o-okay. the Brave Match. you strike it, I'll carry the flame up. together, right?"),
@@ -444,6 +453,7 @@ export const SCRIPTS = {
               say("The Paper Swan", "WHO LIT IT? WHO DARES MAKE IT BRIGHT ENOUGH TO SEE WHAT I'VE BECOME?"),
               { t: "battle", troop: "t_boss_swan", boss: true, flagWin: "woods_boss_done",
                 onPeace: [
+                  { t: "flag", key: "swan_peace", value: true }, // she circles the woods now (map flyer)
                   say("wisp", "she's... flying. crooked-flying. that's still flying!!"),
                   n("A torn page flutters down from her wing as she rises."),
                 ],

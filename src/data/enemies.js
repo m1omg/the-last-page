@@ -10,7 +10,7 @@
 export const ENEMIES = {
   sniffle: {
     name: "Sniffle", img: "en_sniffle",
-    hp: 34, atk: 10, def: 3, spd: 6, emotion: "gloomy",
+    hp: 30, atk: 10, def: 3, spd: 6, emotion: "gloomy",
     intro: "Sniffle drips quietly. It looks like it's been crying for days.",
     acts: [
       { kind: "attack", mult: 1.0, msg: "{e} sneezes a storm of soggy confetti!" },
@@ -28,7 +28,7 @@ export const ENEMIES = {
   },
   scribble: {
     name: "Scribbles", img: "en_scribble",
-    hp: 46, atk: 13, def: 4, spd: 12, emotion: "grumpy",
+    hp: 41, atk: 13, def: 4, spd: 12, emotion: "grumpy",
     intro: "Scribbles bristles like static. Something in its tangle hurts.",
     acts: [
       { kind: "attack", mult: 1.1, msg: "{e} ricochets off your head!" },
@@ -46,7 +46,7 @@ export const ENEMIES = {
   },
   thornbud: {
     name: "Thornbud", img: "en_thornbud",
-    hp: 64, atk: 15, def: 8, spd: 4, emotion: "grumpy",
+    hp: 56, atk: 15, def: 8, spd: 4, emotion: "grumpy",
     intro: "Thornbud refuses to bloom. It glares at you, arms crossed.",
     acts: [
       { kind: "attack", mult: 1.2, msg: "{e} flings a fistful of thorns!" },
@@ -64,7 +64,7 @@ export const ENEMIES = {
   },
   buttoncrab: {
     name: "Clasp", img: "en_buttoncrab",
-    hp: 70, atk: 16, def: 10, spd: 7, emotion: "gloomy",
+    hp: 62, atk: 16, def: 10, spd: 7, emotion: "gloomy",
     intro: "Clasp scuttles sideways, trailing loose threads. It's coming unsewn.",
     acts: [
       { kind: "attack", mult: 1.0, msg: "{e} pinches with a safety-pin claw!" },
@@ -82,7 +82,7 @@ export const ENEMIES = {
   },
   inklet: {
     name: "Inklet", img: "en_inklet",
-    hp: 60, atk: 15, def: 4, spd: 8, emotion: "gloomy",
+    hp: 53, atk: 15, def: 4, spd: 8, emotion: "gloomy",
     intro: "A little blob of the Smudge... but it's reaching up at you. It just wants to be held.",
     acts: [
       { kind: "attack", mult: 1.0, msg: "{e} splashes cold ink on you!" },
@@ -102,7 +102,7 @@ export const ENEMIES = {
   // ------------------------------------------------------------- bosses
   tangle: {
     name: "TANGLE", img: "boss_tangle", boss: true,
-    hp: 125, atk: 15, def: 6, spd: 9, emotion: "grumpy",
+    hp: 112, atk: 15, def: 6, spd: 9, emotion: "grumpy",
     intro: "TANGLE roars like a scribbled-out sentence. Every angry word ever left unsaid, wadded into one.",
     acts: [
       { kind: "attack", mult: 1.2, msg: "{e} lashes out with a whip of jagged lines!" },
@@ -123,7 +123,7 @@ export const ENEMIES = {
   },
   swan: {
     name: "THE PAPER SWAN", img: "boss_swan", boss: true,
-    hp: 155, atk: 18, def: 6, spd: 7, emotion: "gloomy",
+    hp: 140, atk: 18, def: 6, spd: 7, emotion: "gloomy",
     intro: "The Paper Swan bows its creased neck. It guards its crumpled wing the way you guard a memory that hurts.",
     acts: [
       { kind: "attack", mult: 1.1, msg: "{e} slices the air with a razor-fold wing!" },
@@ -144,7 +144,7 @@ export const ENEMIES = {
   },
   keeper: {
     name: "THE BELL KEEPER", img: "boss_keeper", boss: true,
-    hp: 150, atk: 17, def: 6, spd: 6, emotion: "gloomy",
+    hp: 135, atk: 17, def: 6, spd: 6, emotion: "gloomy",
     intro: "The Bell Keeper holds up a small silver bell. When it rings, you flinch before you even know why.",
     acts: [
       { kind: "attack", mult: 1.2, msg: "{e} strikes with a stiff porcelain hand!" },

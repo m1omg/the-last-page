@@ -4,6 +4,9 @@
 // disadvantage = 0.75x). Emotions also give passive quirks:
 //   GIGGLY: 12% chance to dodge     GRUMPY: +20% dmg dealt, +15% dmg taken
 //   GLOOMY: -15% dmg taken, +1 ink/round
+// A GIGGLY doodle is also overexcited: its swings hit 15% harder, and it can
+// take TWO hearts a round instead of one — cheering an enemy up speeds peace,
+// but if the reach breaks down you're left fighting a dodgy, wild thing.
 import { ENEMIES, TROOPS } from "./data/enemies.js";
 import { SKILLS } from "./data/skills.js";
 import { ITEMS } from "./data/items.js";
@@ -34,7 +37,7 @@ export class BattleScene {
         hp: d.hp, maxHp: d.hp, atk: d.atk, defs: d.def, spd: d.spd,
         emotion: d.emotion || "neutral", calm: 0,
         lastReach: null,   // the option that landed last — repeats fizzle
-        settled: false,    // one calm gain per round, reset each beginRound
+        settled: 0,        // calm gains this round (cap 1, or 2 while GIGGLY)
         rallied: false,    // boss second wind, triggered below half HP
         wobble: 0,
       };
@@ -183,7 +186,13 @@ export class BattleScene {
       return this.aliveEnemies().map((e) => ({ ref: e, label: e.name }));
     }
     if (menu.kind === "ally") {
-      return this.party.map((p) => ({ ref: p, label: `${p.name}  ${p.hp}/${p.maxHp}` }));
+      // preview the stat the act actually touches — a Juice Box should show ink
+      const it = menu.act && menu.act.kind === "item" && ITEMS[menu.act.item];
+      const inkOnly = it && it.effect && it.effect.ink && !it.effect.hp;
+      return this.party.map((p) => ({
+        ref: p,
+        label: inkOnly ? `${p.name}  ${p.ink}/${p.maxInk}✒` : `${p.name}  ${p.hp}/${p.maxHp}`,
+      }));
     }
     if (menu.kind === "reach") {
       const e = menu.enemy;
@@ -219,7 +228,7 @@ export class BattleScene {
     // build full turn queue: party acts + enemy acts, by speed
     const acts = [...this.pendingActs];
     for (const e of this.aliveEnemies()) {
-      e.settled = false; // a heart can land again this round
+      e.settled = 0; // hearts can land again this round
       // second wind: a boss below half HP fights twice per round, announced once
       if (e.def.boss && !e.def.immune && !e.rallied && e.hp <= e.maxHp / 2) {
         e.rallied = true;
@@ -367,9 +376,11 @@ export class BattleScene {
   //  - an enemy sitting in its distressed default emotion can't hear you: the
   //    first good option breaks the storm (emotion -> neutral) but gives no calm
   //  - a listening enemy (any emotion but its default) takes +1 calm...
-  //  - ...at most once per round (settled), and never from the same option
-  //    twice in a row (lastReach)
-  //  - a bad option costs a heart and brings the storm back
+  //  - ...at most once per round (settled) — twice while GIGGLY — and never
+  //    from the same option twice in a row (lastReach)
+  //  - a bad option costs a heart and brings the storm back; on a GIGGLY
+  //    doodle the storm doesn't return — the giggle turns wild instead, and
+  //    you're facing an enemy with the full cheerful buff (dodge, hard swings)
   doReach(a, act) {
     const e = act.target;
     if (!e || e.hp <= 0 || e.soothed) return;
@@ -382,17 +393,21 @@ export class BattleScene {
       if (o.good) {
         if (e.settled) { this.queueMsg("The ink is still holding those words. Give them a moment to sink."); return; }
         e.calm++;
-        e.settled = true;
+        e.settled++;
         this.storyReachStep++;
         this.addFloater(e, "♥", "#e88aa0");
       }
     } else if (!o.good) {
       const had = e.calm;
       e.calm = Math.max(0, e.calm - 1);
-      e.emotion = e.def.emotion; // the storm comes back
       e.lastReach = null;
       if (had > 0) this.addFloater(e, "-♥", "#8a6a7a");
-      this.queueMsg(`${e.name} shrinks back into the bad feeling...${had > 0 ? " A heart flickers out." : ""}`);
+      if (e.emotion === "giggly") {
+        this.queueMsg(`${e.name}'s giggle sharpens into something WILDER...${had > 0 ? " A heart flickers out." : ""} (A giggly doodle dodges and swings hard!)`);
+      } else {
+        e.emotion = e.def.emotion; // the storm comes back
+        this.queueMsg(`${e.name} shrinks back into the bad feeling...${had > 0 ? " A heart flickers out." : ""}`);
+      }
     } else if (o.label === e.lastReach) {
       this.queueMsg(`${e.name} nods along... but it just heard that one. It needs something NEW.`);
     } else if (e.emotion === e.def.emotion) {
@@ -401,13 +416,16 @@ export class BattleScene {
       e.lastReach = o.label;
       this.addFloater(e, "listening...", "#e8d8a0");
       this.queueMsg(`${e.name} goes quiet mid-feeling. It's LISTENING now.`);
-    } else if (e.settled) {
+    } else if (e.settled >= (e.emotion === "giggly" ? 2 : 1)) {
       this.queueMsg(`${e.name} is still holding your words. Let them settle.`);
     } else {
       e.calm++;
-      e.settled = true;
+      e.settled++;
       e.lastReach = o.label;
       this.addFloater(e, "♥", "#e88aa0");
+      if (e.emotion === "giggly" && e.settled === 1) {
+        this.queueMsg(`${e.name} is giggling too much to be sad - it could take one more kind thing this round!`);
+      }
     }
 
     if (e.calm >= e.def.calmNeed) {
@@ -431,6 +449,7 @@ export class BattleScene {
       for (const t of list) {
         let raw = e.atk * (act.mult || 1) * soften;
         if (e.emotion === "grumpy") raw *= 1.2;
+        if (e.emotion === "giggly") raw *= 1.15; // overexcited — swings wild
         raw *= advMult(e.emotion, t.emotion);
         raw -= t.def * 0.55;
         const { miss, dmg } = this.dmgTo(t, Math.max(1, raw));
