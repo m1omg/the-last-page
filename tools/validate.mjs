@@ -21,6 +21,17 @@ for (const [name, d] of Object.entries(MAPS)) {
     if (row.length !== COLS) err(`${name} row ${y}: ${row.length} cols (want ${COLS})`);
     if (/[^#.]/.test(row)) err(`${name} row ${y}: bad chars`);
   });
+  if (d.gridSwap) {
+    if (d.gridSwap.grid.length !== ROWS) err(`${name} gridSwap: ${d.gridSwap.grid.length} rows (want ${ROWS})`);
+    d.gridSwap.grid.forEach((row, y) => {
+      if (row.length !== COLS) err(`${name} gridSwap row ${y}: ${row.length} cols (want ${COLS})`);
+      if (/[^#.]/.test(row)) err(`${name} gridSwap row ${y}: bad chars`);
+      // a swap may only OPEN tiles — closing one could trap a mid-map save
+      for (let x = 0; x < COLS; x++) {
+        if (d.grid[y][x] === "." && row[x] === "#") err(`${name} gridSwap closes (${x},${y})`);
+      }
+    });
+  }
   const walk = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && d.grid[y][x] === ".";
   // flood fill from first walkable tile: every walkable tile reachable
   let start = null;

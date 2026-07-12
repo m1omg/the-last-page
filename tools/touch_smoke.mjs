@@ -308,12 +308,15 @@ for (const schemeUnderTest of ["gestures", "dpad"]) {
   await tapLogical(page, cdp, 560, 100);
   ok("tapping a tab switches to it", (await page.evaluate("window.__game.game.menu.tab")) === 2);
 
-  // tap the 5th option row ("Touch controls"), rows at y = 180 + i*50
+  // tap the "Touch controls" row — found by label so menu reshuffles don't
+  // silently retarget this test (rows draw at y = 180 + i*44)
+  const optLabels = await page.evaluate("window.__game.game.menu.optionItems().map(o=>o.label)");
+  const touchRow = optLabels.findIndex((l) => l.startsWith("Touch controls"));
   const before = await page.evaluate("window.__game.touch.scheme");
-  await tapLogical(page, cdp, 400, 180 + 4 * 50 + 10);
+  await tapLogical(page, cdp, 400, 180 + touchRow * 44 + 10);
   const after = await page.evaluate("window.__game.touch.scheme");
   ok("tapping a row activates it (no swipe needed)", before !== after, `${before} → ${after}`);
-  ok("cursor moved to the tapped row", (await page.evaluate("window.__game.game.menu.index")) === 4);
+  ok("cursor moved to the tapped row", (await page.evaluate("window.__game.game.menu.index")) === touchRow);
 
   // tapping outside the panel closes the menu
   await tapLogical(page, cdp, 480, 700);
@@ -455,7 +458,7 @@ for (const schemeUnderTest of ["gestures", "dpad"]) {
   // must not clobber the neighbouring settings keys
   await page.evaluate("window.__game.game.audio ? 0 : 0");
   const stored = JSON.parse(await page.evaluate(`localStorage.getItem("the-last-page-settings")`));
-  // the Options tab grew a 7th row — make sure it still clears the hint lines
+  // the Options tab rows must clear the hint lines below them
   await page.evaluate(`(() => { const g = window.__game.game; g.menu.show(); g.menu.tab = 2; })()`);
   await page.waitForTimeout(300);
   const geom = await page.evaluate("window.__game.game.menu.optGeom");
@@ -520,8 +523,8 @@ for (const schemeUnderTest of ["gestures", "dpad"]) {
   await page.waitForTimeout(350);
   await clickLogical(page, 560, 100); // Options tab
   ok("clicking the Options tab switches to it", (await page.evaluate("window.__game.game.menu.tab")) === 2);
-  await clickLogical(page, 430, 188); // Save game row
-  ok("clicking 'Save game' runs it", (await page.evaluate(`window.__game.game.menu.notice`)).includes("saved"));
+  await clickLogical(page, 430, 188); // Export save row (first option row)
+  ok("clicking 'Export save' runs it", (await page.evaluate(`window.__game.game.menu.notice`)).toLowerCase().includes("downloaded"));
   await clickLogical(page, 30, 360); // dimmed area outside the panel
   ok("clicking outside the panel closes the menu", !(await page.evaluate("window.__game.game.menu.open")));
 

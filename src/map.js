@@ -24,6 +24,13 @@ export class MapScene {
 
   get def() { return MAPS[this.game.state.map]; }
 
+  // the collision grid, honoring gridSwap (a flag can reshape the map, e.g.
+  // the fallen queen's resting spot opens up once she rises)
+  get gridNow() {
+    const d = this.def;
+    return d.gridSwap && this.game.state.flags[d.gridSwap.flag] ? d.gridSwap.grid : d.grid;
+  }
+
   enterMap() {
     const d = this.def;
     this.moving = null;
@@ -46,7 +53,7 @@ export class MapScene {
   // BFS out to the nearest walkable tile so they can never be trapped in a wall.
   rescuePlayer() {
     const st = this.game.state;
-    const g = this.def.grid;
+    const g = this.gridNow;
     const ok = (x, y) => x >= 0 && y >= 0 && x < COLS && y < ROWS && g[y][x] === ".";
     if (ok(st.x, st.y)) return;
     const seen = new Set([`${st.x},${st.y}`]);
@@ -66,8 +73,7 @@ export class MapScene {
 
   solid(x, y) {
     if (x < 0 || y < 0 || x >= COLS || y >= ROWS) return true;
-    const d = this.def;
-    if (d.grid[y][x] === "#") return true;
+    if (this.gridNow[y][x] === "#") return true;
     for (const e of this.entitiesAlive()) {
       if (e.sprite && e.sprite !== "sparkle" && !e.walkable) {
         const [ex, ey] = this.entPos(e);
@@ -123,7 +129,7 @@ export class MapScene {
         if (!sx && !sy) continue;
         const nx = rt.x + sx, ny = rt.y + sy;
         if (nx === st.x && ny === st.y) { this.game.runScript(e.touch); return; }
-        const grid = this.def.grid;
+        const grid = this.gridNow;
         if (grid[ny]?.[nx] !== ".") continue;
         if (this.entitiesAlive().some((o) => o !== e && o.sprite && this.entPos(o)[0] === nx && this.entPos(o)[1] === ny)) continue;
         rt.x = nx; rt.y = ny;
@@ -211,7 +217,7 @@ export class MapScene {
       ctx.fillRect(0, 0, 960, 720);
       ctx.strokeStyle = "rgba(0,0,0,0.15)";
       for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-        if (d.grid[y][x] === "#") {
+        if (this.gridNow[y][x] === "#") {
           ctx.fillStyle = d.dark ? "#282b31" : "#cbbf9f";
           ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
         }
@@ -344,7 +350,7 @@ export class MapScene {
       ctx.save();
       ctx.globalAlpha = 0.35;
       for (let y = 0; y < ROWS; y++) for (let x = 0; x < COLS; x++) {
-        if (d.grid[y][x] === "#") {
+        if (this.gridNow[y][x] === "#") {
           ctx.fillStyle = "#f00";
           ctx.fillRect(x * TILE, y * TILE, TILE, TILE);
         }
@@ -377,14 +383,14 @@ export class MapScene {
     ctx.save();
     ctx.fillStyle = "rgba(30,25,40,0.16)";
     ctx.beginPath();
-    ctx.ellipse(cx, cy + 200, 44, 11, 0, 0, Math.PI * 2);
+    ctx.ellipse(cx, cy + 200, 60, 14, 0, 0, Math.PI * 2);
     ctx.fill();
     const img = assets.img(fl.sprite);
     if (img) {
       ctx.translate(cx, cy + Math.sin(t * 1.7) * 6);
       if (going < 0) ctx.scale(-1, 1);
       ctx.rotate(Math.sin(t * 0.8) * 0.06); // the crooked-flying wobble
-      const w = TILE * 2.7, h = w * (img.height / img.width);
+      const w = TILE * 3.8, h = w * (img.height / img.width);
       ctx.drawImage(img, -w / 2, -h / 2, w, h);
     } else {
       ctx.font = "40px sans-serif";

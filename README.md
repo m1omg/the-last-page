@@ -66,10 +66,9 @@ is only ever for walking.
 
 Touch controls only appear on touch-capable devices, so desktop is unaffected.
 
-Saving works two ways:
-
-- **Open the menu → Options → Save game** to save anywhere.
-- Rest at a warm **lantern lamp** to save *and* fully heal the party.
+Saving happens at warm **lantern lamps**: resting saves *and* fully heals the
+party. The story also saves itself at big checkpoints (after bosses and
+mornings), so a closed tab never costs much.
 
 Progress persists in your browser (localStorage). From Options you can also
 **Export save to a file** (downloads a `.json` backup) and **Import save from

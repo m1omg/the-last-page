@@ -212,7 +212,8 @@ export const SCRIPTS = {
       { label: "How to reach out", then: [
         n("Page two. A doodle with a scribbled-out head, and the same doodle again,\nlistening. Under it: 'A doodle deep in a bad feeling CAN'T HEAR YOU.\nReach out once to break the storm - or change its mood with a skill - THEN talk.'"),
         n("'One heart a turn. That's as fast as anyone's heart un-hurts.\nSay something NEW each time - nobody wants the same comfort twice in a row.\nAnd if you say the WRONG thing... the storm comes back. Be brave. Be kind.'"),
-        n("In the margin, in Ren's biggest letters: 'CHEER THEM UP!! a GIGGLY doodle\nlistens DOUBLE - two hearts a turn!! but if you blow it, the giggle goes WILD:\nit dodges and swings hard until the mood breaks. high risk. high friendship.'"),
+        n("In the margin, in Ren's biggest letters: 'CHEER THEM UP!! a GIGGLY doodle\nlistens DOUBLE - two hearts a turn!! two of us say two DIFFERENT kind things\nin the same turn. (saying the same thing twice in a ROW is the only no-no -\ngoing back and forth between two things is fine, that's called a conversation.)'"),
+        n("'but if you blow the cheer-up, the giggle goes WILD: it dodges and swings\nhard until the mood breaks. high risk. high friendship. - R.'"),
         n("At the bottom, small, in your handwriting:\n'Hearts also make them swing softer. Kindness is armor. - M.'"),
       ] },
       { label: "Staying un-torn", then: [
@@ -412,7 +413,7 @@ export const SCRIPTS = {
     { t: "fade", ms: 600 }, { t: "tp", map: "woods_1", x: 9, y: 1, facing: "down" }, { t: "unfade", ms: 600 },
   ],
   s_crane: [
-    n("A giant origami crane lies on its side, creased where it fell.\nIt's breathing. Slowly. Cranes shouldn't have to breathe."),
+    n("The Paper Swan. The Queen of the Woods herself, lying on her side\nin the dark, creased where she fell. She's breathing. Slowly.\nQueens shouldn't have to breathe."),
   ],
   s_find_match: [
     { t: "sfx", name: "sfx_confirm" },
@@ -431,7 +432,7 @@ export const SCRIPTS = {
     { t: "flag", key: "wisp_joined", value: true }, // hide the NPC before the follower appears
     { t: "join", member: "wisp" },
     n("WISP joined the party!"),
-    say("wisp", "the big candle needs a real fire to start - my flame's too small alone. there's a match somewhere by the fallen crane. Ren drew it. for emergencies."),
+    say("wisp", "the big candle needs a real fire to start - my flame's too small alone. there's a match somewhere by the fallen queen - the big swan. she fell when the candle went out and she hasn't moved since. Ren drew the match. for emergencies."),
   ],
   s_shrine: [
     { t: "if", flag: "woods_boss_done", is: true, then: [
@@ -448,7 +449,7 @@ export const SCRIPTS = {
               { t: "sfx", name: "sfx_emotion" },
               n("Scritch. The match flares. Wisp cups the flame like it's a baby bird,\nfloats up... and the great candle CATCHES."),
               { t: "flag", key: "woods_candle_lit", value: true },
-              n("Light rolls through the woods like a warm tide. And on the tide's heels,\nsomething enormous and white descends into the clearing."),
+              n("Light rolls through the woods like a warm tide. And out in the dark,\npaper RUSTLES - the fallen queen stirs, unfolds joint by creased joint,\nand RISES into the clearing."),
               n("The Paper Swan. Queen of the Woods. She looks at the lit candle...\nand her creased eyes fill with something unbearable."),
               say("The Paper Swan", "WHO LIT IT? WHO DARES MAKE IT BRIGHT ENOUGH TO SEE WHAT I'VE BECOME?"),
               { t: "battle", troop: "t_boss_swan", boss: true, flagWin: "woods_boss_done",
@@ -483,7 +484,7 @@ export const SCRIPTS = {
             { label: "Not yet", then: [ say("wisp", "o-okay. no rush. the dark's not going anywhere. that came out wrong.") ] },
           ] },
         ], else: [
-          say("wisp", "the match! it's near the fallen crane, in the leaves. one match, one chance, zero pressure. AAAH."),
+          say("wisp", "the match! it's near the fallen queen, in the leaves. one match, one chance, zero pressure. AAAH."),
         ] },
       ] },
     ] },

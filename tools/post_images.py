@@ -18,7 +18,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 BGS = ["bg_real_bedroom", "bg_real_hall", "bg_real_street", "bg_hospital_room",
        "bg_blank_page", "bg_meadow_1", "bg_meadow_2", "bg_woods_1", "bg_woods_2",
-       "bg_bay_1", "bg_bay_2", "bg_depths_1", "bg_depths_2",
+       "bg_bay_1", "bg_bay_2", "bg_depths_1", "bg_depths_2", "bg_woods_2_risen",
        "cg_title", "cg_memory_1", "cg_memory_2", "cg_memory_3", "cg_memory_4",
        "cg_ending_true", "cg_ending_page"]
 PORTRAITS = ["pt_mira_neutral", "pt_mira_giggly", "pt_mira_gloomy", "pt_mira_grumpy",

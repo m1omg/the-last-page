@@ -504,11 +504,18 @@ export class BattleScene {
     this.skipDead();
   }
 
+  // battle moods don't follow anyone home — cleared the moment the outcome
+  // is decided, so even the victory text shows a settled party
+  calmParty() {
+    for (const m of this.party) { m.guard = false; m.emotion = "neutral"; }
+  }
+
   checkEnd() {
-    if (this.result) { this.phase = "end"; return true; }
+    if (this.result) { this.phase = "end"; this.calmParty(); return true; }
     if (!this.aliveParty().length) {
       this.result = "lose";
       this.phase = "end";
+      this.calmParty();
       return true;
     }
     const foes = this.aliveEnemies();
@@ -518,6 +525,7 @@ export class BattleScene {
       this.result = this.enemies.every((e) => e.soothed) ? "peace"
         : allSoothed ? "peace" : "win";
       this.phase = "end";
+      this.calmParty();
       // rewards
       if (this.result !== "lose") {
         const items = [];
@@ -555,7 +563,7 @@ export class BattleScene {
       this.skipDead();
       return;
     }
-    for (const m of this.party) { m.guard = false; m.emotion = "neutral"; }
+    this.calmParty();
     this.resolve(this.result);
   }
 

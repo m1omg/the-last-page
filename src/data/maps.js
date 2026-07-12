@@ -46,8 +46,8 @@ export const MAPS = {
     bg: "bg_real_hall", bgm: "bgm_real", dark: true, noFollowers: true,
     grid: [
       "####################",
-      "####..######..######",
-      "####..######..######",
+      "####################",
+      "####.#######..######",
       "###............#####",
       "###............#####",
       "##.............#..##",
@@ -62,7 +62,7 @@ export const MAPS = {
       "####################",
     ],
     entities: [
-      { id: "bedroomdoor", x: 12, y: 1, w: 2, h: 1, touch: "s_hall_to_bedroom" },
+      { id: "bedroomdoor", x: 12, y: 2, w: 2, h: 1, touch: "s_hall_to_bedroom" },
       // the door art fills the whole alcove (rows 0-2), as bedroomdoor's does,
       // so Z anywhere inside the alcove listens at Mom's door
       { id: "momdoor", x: 4, y: 0, w: 2, h: 3, interact: "s_mom_door" },
@@ -263,7 +263,27 @@ export const MAPS = {
   },
   woods_2: {
     bg: "bg_woods_2", bgm: "bgm_woods",
+    // once the candle is lit the fallen queen has risen: lit-candle art,
+    // her resting spot opens up, and (after peace) she circles overhead
+    bgSwap: { flag: "woods_candle_lit", bg: "bg_woods_2_risen" },
     flyer: { sprite: "sp_swan_fly", flag: "swan_peace" },
+    gridSwap: { flag: "woods_candle_lit", grid: [
+      "####################",
+      "####################",
+      "####################",
+      "####################",
+      "###....######....###",
+      "###..............###",
+      "###..............###",
+      "###..............###",
+      "###..............###",
+      "###..............###",
+      "###..............###",
+      "####............####",
+      "########....########",
+      "#########..#########",
+      "####################",
+    ] },
     grid: [
       "####################",
       "####################",
@@ -284,7 +304,7 @@ export const MAPS = {
     entities: [
       { id: "exit", x: 9, y: 13, w: 2, h: 1, touch: "s_woods2_to_woods" },
       { id: "shrine", x: 7, y: 1, w: 6, h: 4, interact: "s_shrine" },
-      { id: "crane", x: 1, y: 6, w: 6, h: 4, interact: "s_crane" },
+      { id: "crane", x: 1, y: 6, w: 6, h: 4, interact: "s_crane", hidden: { flag: "woods_candle_lit", is: true } },
       { id: "spark_match", x: 3, y: 10, w: 1, h: 1, sprite: "sparkle", interact: "s_find_match", hidden: { flag: "got_match", is: true } },
       { id: "wisp_npc", x: 13, y: 5, w: 1, h: 1, sprite: "sp_wisp", interact: "s_meet_wisp", hidden: { flag: "wisp_joined", is: true } },
       { id: "lantern", x: 14, y: 10, w: 1, h: 1, sprite: "lantern", interact: "s_lantern_save" },

@@ -24,12 +24,9 @@ export class Menu {
   // Options tab entries — label + action, kept in one place so update & draw agree.
   optionItems() {
     const g = this.game;
+    // No "save anywhere": saving happens at warm lamps (and at story
+    // checkpoints) — export/import only move an existing save around.
     return [
-      { label: "Save game", run: () => {
-          const ok = g.saveNow();
-          audio.sfx(ok ? "sfx_save" : "sfx_cancel");
-          this.toast(ok ? "Progress saved." : "Save failed.");
-        } },
       { label: "Export save to a file", run: () => {
           const ok = exportSave();
           audio.sfx(ok ? "sfx_confirm" : "sfx_cancel");
@@ -215,7 +212,7 @@ export class Menu {
       });
     } else {
       const list = this.optionItems();
-      // Seven rows now. 44px apart keeps the last one ("Return to the title")
+      // Six rows. 44px apart keeps the last one ("Return to the title")
       // clear of the hint lines below; the smoke test reads optGeom to check
       // that, so this stays honest if another option is ever added.
       const Y0 = 180, STEP = 44, HINT_Y = 478;
@@ -226,7 +223,7 @@ export class Menu {
         if (sel) drawText(ctx, "☞", 200, Y0 + i * STEP, { size: 20, color: "#b8452e" });
         drawText(ctx, o.label, 235, Y0 + i * STEP, { size: 20, bold: sel });
       });
-      drawText(ctx, "Save anywhere here. Warm lamps save AND fully heal the party.", 200, HINT_Y, { size: 17, color: "#8a7a68" });
+      drawText(ctx, "Rest at a warm lamp to save - it fully heals the party too.", 200, HINT_Y, { size: 17, color: "#8a7a68" });
       drawText(ctx, "Export downloads a backup file; Import loads one back in.", 200, HINT_Y + 24, { size: 17, color: "#8a7a68" });
       if (this.noticeT > 0) {
         const a = Math.min(1, this.noticeT);
