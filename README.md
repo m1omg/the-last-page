@@ -97,7 +97,9 @@ doodle-battles, no self-harm. It aims for a soft landing.
 ## How it was made
 
 The original brief, scoping decisions, and the full story bible are preserved
-in [docs/ORIGIN.md](docs/ORIGIN.md).
+in [docs/ORIGIN.md](docs/ORIGIN.md). A detailed development log — process,
+tooling, engineering decisions, and the bugs worth remembering (covering both
+this game and the Full Edition) — is in [docs/DEVLOG.md](docs/DEVLOG.md).
 
 - **Code, story, music** — Claude (Fable 5), via Claude Code
 - **Illustrations** — GPT Image 2, generated through the Codex CLI
