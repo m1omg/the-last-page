@@ -303,9 +303,11 @@ export class MapScene {
         }
       } else {
         const img = assets.img(e.sprite);
-        const bob = Math.sin(performance.now() / 500 + e.y) * 2;
+        // still scenery (sleeping mom, the letter) shouldn't bob like the living
+        const still = e.sprite === "sp_mom_sleep" || e.sprite === "sp_letter";
+        const bob = still ? 0 : Math.sin(performance.now() / 500 + e.y) * 2;
         if (img) {
-          drawSprite(ctx, img, cx, cy + 14 + bob, TILE * 1.3, "feet");
+          drawSprite(ctx, img, cx, cy + 14 + bob, TILE * (e.spriteScale || 1.3), "feet");
         } else {
           drawBlobFallback(ctx, cx, cy + bob, e.sprite === "sp_wisp" ? "#e8a53a" : "#b07b3f");
         }

@@ -207,11 +207,27 @@ if (process.env.SMOKE_ENDING === "page") {
   await chooseOption(1); // stay on the page
   {
     const t = Date.now();
+    // the ending CG must actually be VISIBLE — the fade-to-black before the
+    // choice once stayed up, playing the whole dream ending under black
+    let cgChecked = false;
     while ((await mode()) !== "credits") {
       if (Date.now() - t > 60000) await fail("dream ending credits never rolled (mode=" + (await mode()) + ")");
+      if (!cgChecked && (await mode()) === "cg") {
+        await page.waitForTimeout(2400); // let the unfade finish
+        const lum = await g(`(() => {
+          const c = document.querySelector("canvas");
+          const d = c.getContext("2d").getImageData(0, 0, c.width, c.height).data;
+          let sum = 0, n = 0;
+          for (let i = 0; i < d.length; i += 4096) { sum += d[i] + d[i + 1] + d[i + 2]; n++; }
+          return sum / n / 3;
+        })()`);
+        if (lum < 12) await fail("dream ending CG is (near-)black: mean luminance " + lum.toFixed(1));
+        cgChecked = true;
+      }
       await page.keyboard.press("KeyZ");
       await page.waitForTimeout(200);
     }
+    if (!cgChecked) await fail("dream ending never entered cg mode");
   }
   await shot("ending_page");
   if (errors.length) await fail("console errors during run");

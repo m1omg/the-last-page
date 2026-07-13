@@ -72,6 +72,9 @@ export const MAPS = {
       { id: "kitchen", x: 16, y: 2, w: 4, h: 3, interact: "s_kitchen" },
       { id: "fridge", x: 18, y: 4, w: 2, h: 3, interact: "s_fridge" },
       { id: "sofa", x: 4, y: 6, w: 6, h: 3, interact: "s_sofa" },
+      // Friday morning onward: what the narration says is what you see
+      { id: "mom_sofa", x: 5, y: 6, w: 4, h: 2, sprite: "sp_mom_sleep", spriteScale: 1.6, walkable: true, hidden: { flag: "interlude3", is: false } },
+      { id: "letter", x: 7, y: 13, w: 1, h: 1, sprite: "sp_letter", spriteScale: 0.75, walkable: true, hidden: { flag: "interlude3", is: false } },
       { id: "teatable", x: 4, y: 9, w: 4, h: 2, interact: "s_teatable" },
       { id: "tv", x: 4, y: 13, w: 3, h: 1, interact: "s_tv" },
       { id: "frontdoor", x: 8, y: 13, w: 2, h: 1, touch: "s_front_door" },

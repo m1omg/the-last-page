@@ -25,7 +25,7 @@ export const SCRIPTS = {
     { t: "fade", ms: 1 },
     { t: "bgm", name: "bgm_real" },
     { t: "unfade", ms: 2000 },
-    n("Tuesday. Or Wednesday. The days have stopped introducing themselves."),
+    n("Tuesday. Or Wednesday. The days have stopped introducing themselves.\nSummer holidays make every day the same shape."),
     n("Mira's room used to be the loudest place in the building.\nNow the loudest thing in it is the refrigerator downstairs."),
     mira("neutral", "...I'm going to bed."),
     n("(Move with ARROW KEYS or WASD. Press Z or ENTER to look at things.\nThe bed is the way out of today.)"),
@@ -153,7 +153,7 @@ export const SCRIPTS = {
         mira("gloomy", "...I can't. What if he wakes up and remembers what I said?"),
         n("The letter doesn't answer. Letters never do."),
       ], else: [
-        n("The front door. Outside is school, and pity-faces, and the corner where\nyou're not allowed to think about what happened.\nYou haven't gone out there without Mom in weeks."),
+        n("The front door. Outside is the long summer street, and pity-faces,\nand the corner where you're not allowed to think about what happened.\nYou haven't gone out there without Mom in weeks."),
       ] },
     ] },
   ],
@@ -760,6 +760,10 @@ export const SCRIPTS = {
     { t: "ending", which: "credits" },
   ],
   s_ending_page: [
+    // the choice above faded to black — without this unfade the whole CG and
+    // the credits would play invisibly under the fade overlay
+    { t: "bgm", name: "bgm_ending" },
+    { t: "unfade", ms: 1800 },
     { t: "cg", img: "cg_ending_page", lines: [
       "The tea is always warm. The sun never sets unless you want stars.",
       "Sir Biscuit tells the same joke every day, and it lands every time.",

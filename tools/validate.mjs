@@ -61,7 +61,9 @@ for (const [name, d] of Object.entries(MAPS)) {
     }
     if (e.sprite && e.sprite !== "sparkle" && e.sprite !== "lantern" && e.sprite !== "book" && !e.sprite.startsWith("enemy:") && !e.sprite.startsWith("sp_"))
       warn(`${name}/${e.id}: odd sprite ${e.sprite}`);
-    if (e.sprite && !walkOrSolid(d, e)) err(`${name}/${e.id}: sprite tile solid (unreachable/invisible blocker ok?)`);
+    // walkable sprites are pure decoration (sleeping mom, the letter) — they
+    // can sit on scenery tiles because they block nothing
+    if (e.sprite && !e.walkable && !walkOrSolid(d, e)) err(`${name}/${e.id}: sprite tile solid (unreachable/invisible blocker ok?)`);
   }
   if (d.onEnter && !SCRIPTS[d.onEnter]) err(`${name}: missing onEnter script ${d.onEnter}`);
 

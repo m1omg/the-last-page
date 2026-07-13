@@ -423,7 +423,7 @@ export class BattleScene {
       e.settled++;
       e.lastReach = o.label;
       this.addFloater(e, "♥", "#e88aa0");
-      if (e.emotion === "giggly" && e.settled === 1) {
+      if (e.emotion === "giggly" && e.settled === 1 && e.calm < e.def.calmNeed) {
         this.queueMsg(`${e.name} is giggling too much to be sad - it could take one more kind thing this round!`);
       }
     }

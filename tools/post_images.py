@@ -26,7 +26,8 @@ PORTRAITS = ["pt_mira_neutral", "pt_mira_giggly", "pt_mira_gloomy", "pt_mira_gru
 CHROMA = {"en_sniffle": 384, "en_scribble": 384, "en_thornbud": 384,
           "en_buttoncrab": 384, "en_inklet": 384,
           "boss_tangle": 512, "boss_swan": 512, "boss_keeper": 512, "boss_smudge": 512,
-          "sp_biscuit": 192, "sp_wisp": 192, "sp_guidebook": 192, "sp_swan_fly": 256}
+          "sp_biscuit": 192, "sp_wisp": 192, "sp_guidebook": 192, "sp_swan_fly": 256,
+          "sp_mom_sleep": 256, "sp_letter": 128}
 
 
 def crop_43(img):
